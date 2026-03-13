@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<ruleset name="Media Categories">
+	<description>Quality rules for the Media Categories plugin.</description>
+
+	<file>media-categories.php</file>
+	<file>includes</file>
+	<file>tests</file>
+
+	<arg name="basepath" value="."/>
+	<arg name="colors"/>
+	<arg value="sp"/>
+
+	<config name="testVersion" value="7.4-"/>
+
+	<rule ref="WordPress-Core"/>
+	<rule ref="WordPress-Docs"/>
+	<rule ref="WordPress-Extra"/>
+	<rule ref="PHPCompatibilityWP"/>
+</ruleset>

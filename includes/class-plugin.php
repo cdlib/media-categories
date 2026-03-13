@@ -1,0 +1,94 @@
+<?php
+/**
+ * Main plugin bootstrap.
+ *
+ * @package MediaCategories
+ */
+
+namespace Media_Categories;
+
+defined( 'ABSPATH' ) || exit;
+
+require_once MEDIA_CATEGORIES_DIR . 'includes/class-taxonomy.php';
+require_once MEDIA_CATEGORIES_DIR . 'includes/class-capabilities.php';
+require_once MEDIA_CATEGORIES_DIR . 'includes/class-admin-menu.php';
+require_once MEDIA_CATEGORIES_DIR . 'includes/class-settings.php';
+require_once MEDIA_CATEGORIES_DIR . 'includes/class-attachment-fields.php';
+require_once MEDIA_CATEGORIES_DIR . 'includes/class-media-filters.php';
+require_once MEDIA_CATEGORIES_DIR . 'includes/class-folder-sidebar.php';
+require_once MEDIA_CATEGORIES_DIR . 'includes/class-assets.php';
+
+/**
+ * Coordinates plugin services.
+ */
+final class Plugin {
+	/**
+	 * Singleton instance.
+	 *
+	 * @var Plugin|null
+	 */
+	private static $instance;
+
+	/**
+	 * Service objects.
+	 *
+	 * @var object[]
+	 */
+	private $services = array();
+
+	/**
+	 * Get singleton instance.
+	 *
+	 * @return Plugin
+	 */
+	public static function instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+
+		return self::$instance;
+	}
+
+	/**
+	 * Activation callback.
+	 *
+	 * @return void
+	 */
+	public static function activate() {
+		Capabilities::sync_role_capabilities();
+		flush_rewrite_rules();
+	}
+
+	/**
+	 * Deactivation callback.
+	 *
+	 * @return void
+	 */
+	public static function deactivate() {
+		flush_rewrite_rules();
+	}
+
+	/**
+	 * Boot services.
+	 *
+	 * @return void
+	 */
+	public function init() {
+		$this->services = array(
+			new Capabilities(),
+			new Taxonomy(),
+			new Admin_Menu(),
+			new Settings(),
+			new Attachment_Fields(),
+			new Media_Filters(),
+			new Folder_Sidebar(),
+			new Assets(),
+		);
+
+		foreach ( $this->services as $service ) {
+			if ( method_exists( $service, 'register' ) ) {
+				$service->register();
+			}
+		}
+	}
+}

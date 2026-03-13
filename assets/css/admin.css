@@ -1,0 +1,128 @@
+.media-categories-layout {
+	float: left;
+	width: 240px;
+	margin: 20px 20px 0 0;
+}
+
+.media-categories-sidebar {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+}
+
+.media-categories-sidebar__inner {
+	padding: 16px;
+}
+
+.media-categories-sidebar__inner h2 {
+	margin: 0 0 12px;
+	font-size: 16px;
+}
+
+.media-categories-tree,
+.media-categories-tree ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.media-categories-tree--children {
+	margin-left: 20px;
+	margin-top: 6px;
+}
+
+.media-categories-tree__item + .media-categories-tree__item {
+	margin-top: 4px;
+}
+
+.media-categories-folder {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 10px;
+	border-radius: 4px;
+	color: #1d2327;
+	text-decoration: none;
+}
+
+.media-categories-folder:hover,
+.media-categories-folder:focus {
+	background: #f6f7f7;
+	color: #0a4b78;
+}
+
+.media-categories-folder.is-current {
+	background: #edf6ff;
+	color: #0a4b78;
+	font-weight: 600;
+}
+
+.media-categories-folder__icon {
+	width: 16px;
+	height: 12px;
+	flex: 0 0 16px;
+	border: 1px solid #8c8f94;
+	border-radius: 2px 2px 3px 3px;
+	background: linear-gradient(180deg, #ffe08a 0%, #ffcc4d 100%);
+	position: relative;
+}
+
+.media-categories-folder__icon::before {
+	content: "";
+	position: absolute;
+	top: -4px;
+	left: 1px;
+	width: 8px;
+	height: 4px;
+	border: 1px solid #8c8f94;
+	border-bottom: 0;
+	border-radius: 2px 2px 0 0;
+	background: #ffda72;
+}
+
+.media-categories-folder__label {
+	flex: 1 1 auto;
+}
+
+.media-categories-folder__count {
+	color: #646970;
+	font-size: 12px;
+}
+
+body.upload-php .wrap {
+	display: flow-root;
+}
+
+body.upload-php .wrap .wp-header-end,
+body.upload-php .wrap .notice,
+body.upload-php .wrap .error,
+body.upload-php .wrap .updated {
+	clear: both;
+}
+
+body.upload-php.mode-grid .media-frame {
+	margin-left: 260px;
+}
+
+.media-categories-modal-field {
+	max-height: 180px;
+	overflow: auto;
+	padding: 4px 0;
+}
+
+.media-categories-modal-field label {
+	display: block;
+	margin-bottom: 6px;
+}
+
+@media screen and (max-width: 960px) {
+	.media-categories-layout {
+		float: none;
+		width: auto;
+		margin-right: 0;
+	}
+
+	body.upload-php.mode-grid .media-frame {
+		margin-left: 0;
+	}
+}
