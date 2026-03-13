@@ -27,8 +27,10 @@
 }
 
 .media-categories-tree--children {
-	margin-left: 20px;
+	margin-left: 10px;
 	margin-top: 6px;
+	padding-left: 24px;
+	border-left: 1px solid #dcdcde;
 }
 
 .media-categories-tree__item + .media-categories-tree__item {
@@ -43,6 +45,10 @@
 	border-radius: 4px;
 	color: #1d2327;
 	text-decoration: none;
+}
+
+.media-categories-tree--children > .media-categories-tree__item > .media-categories-folder {
+	padding-left: 14px;
 }
 
 .media-categories-folder:hover,
@@ -113,6 +119,24 @@ body.upload-php.mode-grid .media-frame {
 .media-categories-modal-field label {
 	display: block;
 	margin-bottom: 6px;
+}
+
+.media-categories-modal-tree,
+.media-categories-modal-tree ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.media-categories-modal-tree ul {
+	margin-left: 18px;
+	margin-top: 4px;
+	padding-left: 12px;
+	border-left: 1px solid #dcdcde;
+}
+
+.media-categories-modal-tree__item + .media-categories-modal-tree__item {
+	margin-top: 4px;
 }
 
 @media screen and (max-width: 960px) {

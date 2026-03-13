@@ -48,6 +48,9 @@ class Attachment_Fields {
 	 * @return void
 	 */
 	public function render_meta_box( $post ) {
+		$selected_ids = wp_get_object_terms( $post->ID, TAXONOMY, array( 'fields' => 'ids' ) );
+		$selected_ids = $this->expand_with_ancestor_terms( $selected_ids );
+
 		wp_nonce_field( 'media_categories_attachment_terms', 'media_categories_attachment_terms_nonce' );
 
 		echo '<div class="media-categories-checklist">';
@@ -55,7 +58,7 @@ class Attachment_Fields {
 			$post->ID,
 			array(
 				'taxonomy'      => TAXONOMY,
-				'selected_cats' => wp_get_object_terms( $post->ID, TAXONOMY, array( 'fields' => 'ids' ) ),
+				'selected_cats' => $selected_ids,
 				'checked_ontop' => false,
 			)
 		);
@@ -79,6 +82,7 @@ class Attachment_Fields {
 
 		$terms = isset( $_POST['tax_input'][ TAXONOMY ] ) ? (array) wp_unslash( $_POST['tax_input'][ TAXONOMY ] ) : array();
 		$terms = array_map( 'intval', $terms );
+		$terms = $this->expand_with_ancestor_terms( $terms );
 
 		wp_set_object_terms( $attachment_id, $terms, TAXONOMY, false );
 	}
@@ -96,26 +100,14 @@ class Attachment_Fields {
 		}
 
 		$selected_ids = wp_get_object_terms( $post->ID, TAXONOMY, array( 'fields' => 'ids' ) );
-		$terms        = get_terms(
-			array(
-				'taxonomy'   => TAXONOMY,
-				'hide_empty' => false,
-				'orderby'    => 'name',
-			)
-		);
-
+		$selected_ids = $this->expand_with_ancestor_terms( $selected_ids );
 		$html = '<div class="media-categories-modal-field"><fieldset><legend class="screen-reader-text">' . esc_html__( 'Media Categories', 'media-categories' ) . '</legend>';
-
-		foreach ( $terms as $term ) {
-			$html .= sprintf(
-				'<label><input type="checkbox" name="attachments[%1$d][media_categories_terms][]" value="%2$d" %3$s /> %4$s</label><br />',
-				(int) $post->ID,
-				(int) $term->term_id,
-				checked( in_array( (int) $term->term_id, $selected_ids, true ), true, false ),
-				esc_html( $term->name )
-			);
-		}
-
+		$html .= sprintf(
+			'<input type="hidden" class="media-categories-modal-input" name="attachments[%1$d][media_categories_terms]" value="%2$s" />',
+			(int) $post->ID,
+			esc_attr( implode( ',', array_map( 'intval', $selected_ids ) ) )
+		);
+		$html .= $this->render_modal_term_checklist( $selected_ids );
 		$html                     .= '</fieldset></div>';
 		$form_fields['media_categories_terms'] = array(
 			'label' => __( 'Media Categories', 'media-categories' ),
@@ -138,11 +130,142 @@ class Attachment_Fields {
 			return $post;
 		}
 
-		$terms = isset( $attachment['media_categories_terms'] ) ? (array) $attachment['media_categories_terms'] : array();
+		$terms = array();
+
+		if ( isset( $attachment['media_categories_terms'] ) ) {
+			if ( is_array( $attachment['media_categories_terms'] ) ) {
+				$terms = $attachment['media_categories_terms'];
+			} else {
+				$terms = array_filter(
+					array_map(
+						'trim',
+						explode( ',', (string) $attachment['media_categories_terms'] )
+					),
+					'strlen'
+				);
+			}
+		}
+
 		$terms = array_map( 'intval', $terms );
+		$terms = $this->expand_with_ancestor_terms( $terms );
 
 		wp_set_object_terms( $post['ID'], $terms, TAXONOMY, false );
 
 		return $post;
+	}
+
+	/**
+	 * Render hierarchical checklist markup for the media modal.
+	 *
+	 * @param int[] $selected_ids Selected term IDs.
+	 * @return string
+	 */
+	private function render_modal_term_checklist( $selected_ids ) {
+		$tree = $this->get_term_tree();
+
+		if ( empty( $tree ) ) {
+			return '<p class="description">' . esc_html__( 'No media categories available yet.', 'media-categories' ) . '</p>';
+		}
+
+		return '<ul class="media-categories-modal-tree">' . $this->render_modal_term_nodes( $tree, $selected_ids ) . '</ul>';
+	}
+
+	/**
+	 * Render checklist items recursively.
+	 *
+	 * @param array[] $nodes Term tree nodes.
+	 * @param int[]   $selected_ids Selected term IDs.
+	 * @return string
+	 */
+	private function render_modal_term_nodes( $nodes, $selected_ids ) {
+		$html = '';
+
+		foreach ( $nodes as $node ) {
+			$html .= '<li class="media-categories-modal-tree__item">';
+			$html .= sprintf(
+				'<label><input type="checkbox" class="media-categories-modal-checkbox" value="%1$d" data-parent-term-id="%2$d" %3$s /> %4$s</label>',
+				(int) $node['term_id'],
+				(int) $node['parent'],
+				checked( in_array( (int) $node['term_id'], $selected_ids, true ), true, false ),
+				esc_html( $node['name'] )
+			);
+
+			if ( ! empty( $node['children'] ) ) {
+				$html .= '<ul class="media-categories-modal-tree">';
+				$html .= $this->render_modal_term_nodes( $node['children'], $selected_ids );
+				$html .= '</ul>';
+			}
+
+			$html .= '</li>';
+		}
+
+		return $html;
+	}
+
+	/**
+	 * Build a hierarchical term tree.
+	 *
+	 * @return array[]
+	 */
+	private function get_term_tree() {
+		$terms = get_terms(
+			array(
+				'taxonomy'   => TAXONOMY,
+				'hide_empty' => false,
+				'orderby'    => 'name',
+			)
+		);
+
+		if ( is_wp_error( $terms ) || empty( $terms ) ) {
+			return array();
+		}
+
+		$indexed = array();
+
+		foreach ( $terms as $term ) {
+			$indexed[ $term->term_id ] = array(
+				'term_id'  => (int) $term->term_id,
+				'name'     => $term->name,
+				'parent'   => (int) $term->parent,
+				'children' => array(),
+			);
+		}
+
+		$tree = array();
+
+		foreach ( array_keys( $indexed ) as $term_id ) {
+			$parent = $indexed[ $term_id ]['parent'];
+
+			if ( 0 !== $parent && isset( $indexed[ $parent ] ) ) {
+				$indexed[ $parent ]['children'][] = &$indexed[ $term_id ];
+			} else {
+				$tree[] = &$indexed[ $term_id ];
+			}
+		}
+
+		return $tree;
+	}
+
+	/**
+	 * Ensure ancestor terms are included for every selected child term.
+	 *
+	 * @param int[] $term_ids Selected term IDs.
+	 * @return int[]
+	 */
+	private function expand_with_ancestor_terms( $term_ids ) {
+		$term_ids = array_values( array_unique( array_filter( array_map( 'intval', $term_ids ) ) ) );
+
+		foreach ( $term_ids as $term_id ) {
+			$ancestors = get_ancestors( $term_id, TAXONOMY, 'taxonomy' );
+
+			if ( ! empty( $ancestors ) ) {
+				$term_ids = array_merge( $term_ids, array_map( 'intval', $ancestors ) );
+			}
+		}
+
+		$term_ids = array_values( array_unique( array_filter( $term_ids ) ) );
+		sort( $term_ids );
+
+		return $term_ids;
 	}
 }

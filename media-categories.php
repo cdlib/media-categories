@@ -1,10 +1,11 @@
 <?php
 /**
  * Plugin Name: Media Categories
- * Plugin URI:  https://example.com/media-categories
+ * Plugin URI:  https://github.com/ericsatzman/media-categories
  * Description: Adds hierarchical media categories, media-library filtering, and virtual folders for attachments.
  * Version:     0.1.0
  * Author:      Codex
+ * Update URI:  https://github.com/ericsatzman/media-categories
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: media-categories

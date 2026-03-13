@@ -62,6 +62,7 @@ class Taxonomy {
 				'rewrite'           => false,
 				'query_var'         => TAXONOMY,
 				'meta_box_cb'       => false,
+				'update_count_callback' => '_update_generic_term_count',
 				'capabilities'      => array(
 					'manage_terms' => MANAGE_CAP,
 					'edit_terms'   => EDIT_CAP,

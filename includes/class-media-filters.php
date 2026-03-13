@@ -119,7 +119,7 @@ class Media_Filters {
 				'taxonomy'         => TAXONOMY,
 				'field'            => 'term_id',
 				'terms'            => array( (int) $selected ),
-				'include_children' => false,
+				'include_children' => true,
 			),
 		);
 
@@ -155,7 +155,7 @@ class Media_Filters {
 					'taxonomy'         => TAXONOMY,
 					'field'            => 'term_id',
 					'terms'            => array( (int) $selected ),
-					'include_children' => false,
+					'include_children' => true,
 				),
 			)
 		);
