@@ -27,6 +27,9 @@ class Folder_Sidebar {
 	 */
 	public function register() {
 		add_action( 'admin_notices', array( $this, 'render_sidebar' ) );
+		add_action( 'wp_ajax_media_categories_create_term', array( $this, 'ajax_create_term' ) );
+		add_action( 'wp_ajax_media_categories_rename_term', array( $this, 'ajax_rename_term' ) );
+		add_action( 'wp_ajax_media_categories_delete_term', array( $this, 'ajax_delete_term' ) );
 	}
 
 	/**
@@ -41,12 +44,41 @@ class Folder_Sidebar {
 
 		$current = isset( $_GET['media_category_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['media_category_filter'] ) ) : '';
 		$tree    = $this->get_term_tree();
+		$can_manage = current_user_can( MANAGE_CAP );
 		?>
 		<div class="media-categories-layout">
 			<aside class="media-categories-sidebar" aria-label="<?php esc_attr_e( 'Media category folders', 'media-categories' ); ?>">
+				<button type="button" class="media-categories-sidebar__toggle" aria-expanded="true" aria-label="<?php esc_attr_e( 'Collapse media categories panel', 'media-categories' ); ?>">
+					<span class="dashicons dashicons-arrow-left-alt2" aria-hidden="true"></span>
+				</button>
 				<div class="media-categories-sidebar__inner">
-					<h2><?php esc_html_e( 'Media Categories', 'media-categories' ); ?></h2>
+					<div class="media-categories-toolbar">
+						<button type="button" class="button button-primary media-categories-toolbar__new" <?php disabled( $can_manage, false ); ?>>
+							<span class="dashicons dashicons-plus-alt2" aria-hidden="true"></span>
+							<?php esc_html_e( 'New Folder', 'media-categories' ); ?>
+						</button>
+						<div class="media-categories-toolbar__actions">
+							<button type="button" class="button media-categories-toolbar__action media-categories-toolbar__rename" <?php disabled( $can_manage, false ); ?>>
+								<span class="dashicons dashicons-edit" aria-hidden="true"></span>
+								<?php esc_html_e( 'Rename', 'media-categories' ); ?>
+							</button>
+							<button type="button" class="button media-categories-toolbar__action media-categories-toolbar__delete" <?php disabled( $can_manage, false ); ?>>
+								<span class="dashicons dashicons-trash" aria-hidden="true"></span>
+								<?php esc_html_e( 'Delete', 'media-categories' ); ?>
+							</button>
+							<button type="button" class="button media-categories-toolbar__action media-categories-toolbar__sort" aria-pressed="false">
+								<span class="dashicons dashicons-sort" aria-hidden="true"></span>
+								<?php esc_html_e( 'Sort', 'media-categories' ); ?>
+							</button>
+						</div>
+					</div>
+					<div class="media-categories-search">
+						<label class="screen-reader-text" for="media-categories-folder-search"><?php esc_html_e( 'Search folders', 'media-categories' ); ?></label>
+						<span class="dashicons dashicons-search" aria-hidden="true"></span>
+						<input type="search" id="media-categories-folder-search" class="media-categories-search__input" placeholder="<?php esc_attr_e( 'Enter folder name...', 'media-categories' ); ?>" />
+					</div>
 					<ul class="media-categories-tree">
+						<?php $this->render_folder_item( '', __( 'All Files', 'media-categories' ), $this->get_all_files_count(), $current, array(), true ); ?>
 						<?php $this->render_folder_item( 'uncategorized', __( 'Uncategorized', 'media-categories' ), $this->get_uncategorized_count(), $current, array() ); ?>
 						<?php foreach ( $tree as $node ) : ?>
 							<?php $this->render_term_node( $node, $current ); ?>
@@ -71,7 +103,9 @@ class Folder_Sidebar {
 			$node['name'],
 			$node['count'],
 			$current,
-			$node['children']
+			$node['children'],
+			false,
+			$node['term_id']
 		);
 	}
 
@@ -85,7 +119,7 @@ class Folder_Sidebar {
 	 * @param array  $children Child nodes.
 	 * @return void
 	 */
-	private function render_folder_item( $value, $label, $count, $current, $children ) {
+	private function render_folder_item( $value, $label, $count, $current, $children, $is_all_files = false, $term_id = 0 ) {
 		$url = add_query_arg(
 			array(
 				'post_type'             => 'attachment',
@@ -97,13 +131,17 @@ class Folder_Sidebar {
 
 		$is_current = (string) $current === (string) $value;
 		$has_child  = ! empty( $children );
+		$is_virtual = $is_all_files || 'uncategorized' === $value;
 
 		echo '<li class="media-categories-tree__item">';
 		printf(
-			'<a href="%1$s" class="media-categories-folder%2$s" data-media-category-filter="%3$s"><span class="media-categories-folder__icon" aria-hidden="true"></span><span class="media-categories-folder__label">%4$s</span><span class="media-categories-folder__count">%5$d</span></a>',
+			'<a href="%1$s" class="media-categories-folder%2$s" data-media-category-filter="%3$s" data-term-id="%4$d" data-virtual-folder="%5$s"><span class="media-categories-folder__icon%6$s" aria-hidden="true"></span><span class="media-categories-folder__label">%7$s</span><span class="media-categories-folder__count">%8$d</span></a>',
 			esc_url( $url ),
 			$is_current ? ' is-current' : '',
 			esc_attr( $value ),
+			(int) $term_id,
+			$is_virtual ? 'yes' : 'no',
+			$is_all_files ? ' media-categories-folder__icon--home' : '',
 			esc_html( $label ),
 			(int) $count
 		);
@@ -249,5 +287,121 @@ class Folder_Sidebar {
 		);
 
 		return (int) $query->found_posts;
+	}
+
+	/**
+	 * Count all attachments.
+	 *
+	 * @return int
+	 */
+	private function get_all_files_count() {
+		$query = new \WP_Query(
+			array(
+				'post_type'              => 'attachment',
+				'post_status'            => 'inherit',
+				'fields'                 => 'ids',
+				'posts_per_page'         => 1,
+				'no_found_rows'          => false,
+				'update_post_term_cache' => false,
+				'update_post_meta_cache' => false,
+			)
+		);
+
+		return (int) $query->found_posts;
+	}
+
+	/**
+	 * Create a new media category.
+	 *
+	 * @return void
+	 */
+	public function ajax_create_term() {
+		check_ajax_referer( 'media_categories_manage_terms', 'nonce' );
+
+		if ( ! current_user_can( MANAGE_CAP ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to create media categories.', 'media-categories' ) ), 403 );
+		}
+
+		$name      = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
+		$parent_id = isset( $_POST['parent_id'] ) ? absint( $_POST['parent_id'] ) : 0;
+
+		if ( '' === $name ) {
+			wp_send_json_error( array( 'message' => __( 'Please enter a folder name.', 'media-categories' ) ), 400 );
+		}
+
+		$result = wp_insert_term(
+			$name,
+			TAXONOMY,
+			array(
+				'parent' => $parent_id,
+			)
+		);
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ), 400 );
+		}
+
+		wp_send_json_success( array( 'message' => __( 'Folder created.', 'media-categories' ) ) );
+	}
+
+	/**
+	 * Rename an existing media category.
+	 *
+	 * @return void
+	 */
+	public function ajax_rename_term() {
+		check_ajax_referer( 'media_categories_manage_terms', 'nonce' );
+
+		if ( ! current_user_can( MANAGE_CAP ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to rename media categories.', 'media-categories' ) ), 403 );
+		}
+
+		$term_id = isset( $_POST['term_id'] ) ? absint( $_POST['term_id'] ) : 0;
+		$name    = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
+
+		if ( ! $term_id || '' === $name ) {
+			wp_send_json_error( array( 'message' => __( 'Please select a folder and provide a new name.', 'media-categories' ) ), 400 );
+		}
+
+		$result = wp_update_term(
+			$term_id,
+			TAXONOMY,
+			array(
+				'name' => $name,
+			)
+		);
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ), 400 );
+		}
+
+		wp_send_json_success( array( 'message' => __( 'Folder renamed.', 'media-categories' ) ) );
+	}
+
+	/**
+	 * Delete an existing media category.
+	 *
+	 * @return void
+	 */
+	public function ajax_delete_term() {
+		check_ajax_referer( 'media_categories_manage_terms', 'nonce' );
+
+		if ( ! current_user_can( DELETE_CAP ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to delete media categories.', 'media-categories' ) ), 403 );
+		}
+
+		$term_id = isset( $_POST['term_id'] ) ? absint( $_POST['term_id'] ) : 0;
+
+		if ( ! $term_id ) {
+			wp_send_json_error( array( 'message' => __( 'Please select a folder to delete.', 'media-categories' ) ), 400 );
+		}
+
+		$result = wp_delete_term( $term_id, TAXONOMY );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ), 400 );
+		}
+
+		wp_send_json_success( array( 'message' => __( 'Folder deleted.', 'media-categories' ) ) );
 	}
 }

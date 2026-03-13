@@ -84,7 +84,23 @@ class Assets {
 					'dropdownLabel'   => __( 'Filter by Media Categories', 'media-categories' ),
 					'uncategorized'   => __( 'Uncategorized', 'media-categories' ),
 					'allLabel'        => __( 'All media categories', 'media-categories' ),
-					'libraryTitle'    => __( 'Media Categories', 'media-categories' ),
+				'libraryTitle'    => __( 'Media Categories', 'media-categories' ),
+					'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
+					'nonce'           => wp_create_nonce( 'media_categories_manage_terms' ),
+					'canManage'       => current_user_can( MANAGE_CAP ),
+					'strings'         => array(
+						'createPrompt'      => __( 'Enter a name for the new folder.', 'media-categories' ),
+						'renamePrompt'      => __( 'Enter a new folder name.', 'media-categories' ),
+						'deleteConfirm'     => __( 'Delete this folder? Media items will remain in the library.', 'media-categories' ),
+						'selectFolder'      => __( 'Select a folder first.', 'media-categories' ),
+						'folderCreated'     => __( 'Folder created.', 'media-categories' ),
+						'folderRenamed'     => __( 'Folder renamed.', 'media-categories' ),
+						'folderDeleted'     => __( 'Folder deleted.', 'media-categories' ),
+						'collapseLabel'     => __( 'Collapse media categories panel', 'media-categories' ),
+						'expandLabel'       => __( 'Expand media categories panel', 'media-categories' ),
+						'sortAscending'     => __( 'Folders sorted A to Z.', 'media-categories' ),
+						'sortDescending'    => __( 'Folders sorted Z to A.', 'media-categories' ),
+					),
 				)
 			);
 		}
