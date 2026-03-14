@@ -36,8 +36,9 @@ class Assets {
 
 		$is_media_screen      = 'upload' === $screen->base;
 		$is_attachment_screen = 'attachment' === $screen->id;
+		$is_taxonomy_screen   = 'edit-' . TAXONOMY === $screen->id;
 
-		if ( ! $is_media_screen && ! $is_attachment_screen ) {
+		if ( ! $is_media_screen && ! $is_attachment_screen && ! $is_taxonomy_screen ) {
 			return;
 		}
 
@@ -73,8 +74,9 @@ class Assets {
 						array_map(
 							static function ( $term ) {
 								return array(
-									'id'   => (int) $term->term_id,
-									'name' => $term->name,
+									'id'     => (int) $term->term_id,
+									'name'   => $term->name,
+									'parent' => (int) $term->parent,
 								);
 							},
 							is_array( $terms ) ? $terms : array()
@@ -89,7 +91,13 @@ class Assets {
 					'nonce'           => wp_create_nonce( 'media_categories_manage_terms' ),
 					'canManage'       => current_user_can( MANAGE_CAP ),
 					'strings'         => array(
-						'createPrompt'      => __( 'Enter a name for the new folder.', 'media-categories' ),
+						'createPrompt'      => __( 'Create New Folder', 'media-categories' ),
+						'nameLabel'         => __( 'Folder name', 'media-categories' ),
+						'parentLabel'       => __( 'Parent folder', 'media-categories' ),
+						'noneOption'        => __( 'None', 'media-categories' ),
+						'createButton'      => __( 'Create Folder', 'media-categories' ),
+						'cancelButton'      => __( 'Cancel', 'media-categories' ),
+						'nameRequired'      => __( 'Please enter a folder name.', 'media-categories' ),
 						'renamePrompt'      => __( 'Enter a new folder name.', 'media-categories' ),
 						'deleteConfirm'     => __( 'Delete this folder? Media items will remain in the library.', 'media-categories' ),
 						'selectFolder'      => __( 'Select a folder first.', 'media-categories' ),
@@ -102,6 +110,16 @@ class Assets {
 						'sortDescending'    => __( 'Folders sorted Z to A.', 'media-categories' ),
 					),
 				)
+			);
+		}
+
+		if ( $is_taxonomy_screen ) {
+			wp_enqueue_script(
+				'media-categories-taxonomy',
+				MEDIA_CATEGORIES_URL . 'assets/js/taxonomy-admin.js',
+				array( 'jquery' ),
+				MEDIA_CATEGORIES_VERSION,
+				true
 			);
 		}
 	}

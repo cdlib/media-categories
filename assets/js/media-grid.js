@@ -8,6 +8,8 @@
 	const data = window.mediaCategoriesData;
 	let initialFilterApplied = false;
 	let sortDescending = false;
+	let frameEventsBound = false;
+	let sidebarRefreshTimer = null;
 
 	function getBrowser() {
 		if ( ! wp.media.frame || ! wp.media.frame.content ) {
@@ -24,6 +26,7 @@
 		}
 
 		const toolbar = browser.toolbar.$el;
+		const secondary = toolbar.find( '.media-toolbar-secondary' );
 
 		if ( ! toolbar.length || toolbar.find( '.media-categories-grid-filter' ).length ) {
 			return;
@@ -45,7 +48,11 @@
 		} );
 
 		wrapper.append( select );
-		toolbar.append( wrapper );
+		if ( secondary.length ) {
+			secondary.append( wrapper );
+		} else {
+			toolbar.append( wrapper );
+		}
 	}
 
 	function updateLibraryFilter( selected ) {
@@ -129,6 +136,30 @@
 		} );
 	}
 
+	function refreshSidebarCounts() {
+		if ( sidebarRefreshTimer ) {
+			window.clearTimeout( sidebarRefreshTimer );
+		}
+
+		sidebarRefreshTimer = window.setTimeout( function() {
+			const requestUrl = new URL( window.location.href );
+
+			$.get( requestUrl.toString() ).done( function( response ) {
+				const markup = $( '<div></div>' ).append( $.parseHTML( response ) );
+				const nextSidebar = markup.find( '.media-categories-layout' ).first();
+				const currentSidebar = $( '.media-categories-layout' ).first();
+
+				if ( ! nextSidebar.length || ! currentSidebar.length ) {
+					return;
+				}
+
+				currentSidebar.replaceWith( nextSidebar );
+				restoreSidebarState();
+				updateToolbarState();
+			} );
+		}, 250 );
+	}
+
 	function getSelectedFolder() {
 		return $( '.media-categories-folder.is-current' ).first();
 	}
@@ -165,22 +196,35 @@
 	}
 
 	function sortFolderTree( $list, descending ) {
-		const items = $list.children( '.media-categories-tree__item' ).get();
+		let items = $list.children( '.media-categories-tree__item' ).get();
+		const divider = $list.children( '.media-categories-tree__divider' ).first();
+		const pinnedItems = [];
+
+		items = items.filter( function( item ) {
+			const label = $( item ).children( '.media-categories-folder' ).find( '.media-categories-folder__label' ).text().trim().toLowerCase();
+			const isPinned = label === 'all files' || label === 'uncategorized';
+
+			if ( isPinned ) {
+				pinnedItems.push( item );
+			}
+
+			return ! isPinned;
+		} );
 
 		items.sort( function( a, b ) {
 			const aLabel = $( a ).children( '.media-categories-folder' ).find( '.media-categories-folder__label' ).text().trim().toLowerCase();
 			const bLabel = $( b ).children( '.media-categories-folder' ).find( '.media-categories-folder__label' ).text().trim().toLowerCase();
 
-			if ( aLabel === 'all files' || aLabel === 'uncategorized' ) {
-				return -1;
-			}
-
-			if ( bLabel === 'all files' || bLabel === 'uncategorized' ) {
-				return 1;
-			}
-
 			return descending ? bLabel.localeCompare( aLabel ) : aLabel.localeCompare( bLabel );
 		} );
+
+		$.each( pinnedItems, function( _, item ) {
+			$list.append( item );
+		} );
+
+		if ( divider.length ) {
+			$list.append( divider );
+		}
 
 		$.each( items, function( _, item ) {
 			const childList = $( item ).children( '.media-categories-tree--children' );
@@ -193,6 +237,125 @@
 		} );
 	}
 
+	function getHierarchyDepth( termId, termMap ) {
+		let depth = 0;
+		let currentId = String( termId || '' );
+
+		while ( currentId && termMap[ currentId ] && termMap[ currentId ].parent ) {
+			depth += 1;
+			currentId = String( termMap[ currentId ].parent );
+		}
+
+		return depth;
+	}
+
+	function getParentOptions() {
+		const termMap = {};
+		const items = [];
+
+		data.terms.forEach( function( term ) {
+			termMap[ String( term.id ) ] = term;
+		} );
+
+		data.terms.forEach( function( term ) {
+			const depth = getHierarchyDepth( term.id, termMap );
+			const indent = depth ? '\u00A0'.repeat( depth * 3 ) + '\u2014 ' : '';
+
+			items.push( {
+				id: String( term.id ),
+				label: indent + term.name,
+				depth: depth,
+				name: term.name.toLowerCase()
+			} );
+		} );
+
+		items.sort( function( a, b ) {
+			if ( a.depth !== b.depth ) {
+				return a.depth - b.depth;
+			}
+
+			return a.name.localeCompare( b.name );
+		} );
+
+		return items;
+	}
+
+	function openCreateFolderDialog( defaultParentId ) {
+		const deferred = $.Deferred();
+		const options = getParentOptions();
+		const overlay = $( '<div class="media-categories-dialog-backdrop"></div>' );
+		const dialog = $( '<div class="media-categories-dialog" role="dialog" aria-modal="true"></div>' );
+		const headingId = 'media-categories-create-folder-title';
+		const parentValue = defaultParentId || '0';
+		let optionsHtml = '<option value="0">' + data.strings.noneOption + '</option>';
+
+		options.forEach( function( option ) {
+			optionsHtml += '<option value="' + option.id + '">' + option.label + '</option>';
+		} );
+
+		dialog.html(
+			'<form class="media-categories-dialog__form">' +
+				'<h2 id="' + headingId + '" class="media-categories-dialog__title">' + data.strings.createPrompt + '</h2>' +
+				'<label class="media-categories-dialog__field">' +
+					'<span>' + data.strings.nameLabel + '</span>' +
+					'<input type="text" class="media-categories-dialog__input media-categories-dialog__name" />' +
+				'</label>' +
+				'<label class="media-categories-dialog__field">' +
+					'<span>' + data.strings.parentLabel + '</span>' +
+					'<select class="media-categories-dialog__input media-categories-dialog__parent">' + optionsHtml + '</select>' +
+				'</label>' +
+				'<div class="media-categories-dialog__actions">' +
+					'<button type="button" class="button media-categories-dialog__cancel">' + data.strings.cancelButton + '</button>' +
+					'<button type="submit" class="button button-primary">' + data.strings.createButton + '</button>' +
+				'</div>' +
+			'</form>'
+		);
+
+		dialog.attr( 'aria-labelledby', headingId );
+		overlay.append( dialog );
+		$( 'body' ).append( overlay );
+
+		dialog.find( '.media-categories-dialog__parent' ).val( parentValue );
+		dialog.find( '.media-categories-dialog__name' ).trigger( 'focus' );
+
+		function closeDialog() {
+			overlay.remove();
+		}
+
+		dialog.on( 'click', '.media-categories-dialog__cancel', function() {
+			closeDialog();
+			deferred.reject();
+		} );
+
+		overlay.on( 'click', function( event ) {
+			if ( event.target === overlay.get( 0 ) ) {
+				closeDialog();
+				deferred.reject();
+			}
+		} );
+
+		dialog.on( 'submit', '.media-categories-dialog__form', function( event ) {
+			event.preventDefault();
+
+			const name = dialog.find( '.media-categories-dialog__name' ).val().toString().trim();
+			const parentId = dialog.find( '.media-categories-dialog__parent' ).val().toString();
+
+			if ( ! name ) {
+				window.alert( data.strings.nameRequired );
+				dialog.find( '.media-categories-dialog__name' ).trigger( 'focus' );
+				return;
+			}
+
+			closeDialog();
+			deferred.resolve( {
+				name: name,
+				parentId: Number( parentId )
+			} );
+		} );
+
+		return deferred.promise();
+	}
+
 	function bindFolderControls() {
 		$( document ).on( 'click', '.media-categories-toolbar__new', function() {
 			if ( ! data.canManage ) {
@@ -200,20 +363,16 @@
 			}
 
 			const selectedFolder = getSelectedFolder();
-			const parentId = selectedFolder.length && selectedFolder.data( 'virtual-folder' ) !== 'yes' ? Number( selectedFolder.data( 'term-id' ) || 0 ) : 0;
-			const name = window.prompt( data.strings.createPrompt, '' );
-
-			if ( ! name ) {
-				return;
-			}
-
-			performFolderAction( 'media_categories_create_term', {
-				name: name,
-				parent_id: parentId
-			} ).done( function() {
-				reloadSidebarState( selectedFolder.data( 'media-category-filter' ) || '' );
-			} ).fail( function( response ) {
-				window.alert( response.responseJSON && response.responseJSON.data && response.responseJSON.data.message ? response.responseJSON.data.message : response.statusText );
+			const defaultParentId = selectedFolder.length && selectedFolder.data( 'virtual-folder' ) !== 'yes' ? String( selectedFolder.data( 'term-id' ) || 0 ) : '0';
+			openCreateFolderDialog( defaultParentId ).done( function( result ) {
+				performFolderAction( 'media_categories_create_term', {
+					name: result.name,
+					parent_id: result.parentId
+				} ).done( function() {
+					reloadSidebarState( selectedFolder.data( 'media-category-filter' ) || '' );
+				} ).fail( function( response ) {
+					window.alert( response.responseJSON && response.responseJSON.data && response.responseJSON.data.message ? response.responseJSON.data.message : response.statusText );
+				} );
 			} );
 		} );
 
@@ -299,20 +458,28 @@
 	}
 
 	function restoreSidebarState() {
-		if ( window.localStorage.getItem( 'mediaCategoriesSidebarCollapsed' ) !== '1' ) {
-			updateToolbarState();
+		$( 'body' ).removeClass( 'media-categories-sidebar-collapsed' );
+		$( '.media-categories-sidebar__toggle' )
+			.attr( 'aria-expanded', 'true' )
+			.attr( 'aria-label', data.strings.collapseLabel )
+			.find( '.dashicons' )
+			.removeClass( 'dashicons-arrow-right-alt2' )
+			.addClass( 'dashicons-arrow-left-alt2' );
+
+		window.localStorage.setItem( 'mediaCategoriesSidebarCollapsed', '0' );
+		updateToolbarState();
+	}
+
+	function bindFrameEvents() {
+		if ( frameEventsBound || ! wp.media.frame || ! wp.media.frame.on ) {
 			return;
 		}
 
-		$( 'body' ).addClass( 'media-categories-sidebar-collapsed' );
-		$( '.media-categories-sidebar__toggle' )
-			.attr( 'aria-expanded', 'false' )
-			.attr( 'aria-label', data.strings.expandLabel )
-			.find( '.dashicons' )
-			.removeClass( 'dashicons-arrow-left-alt2' )
-			.addClass( 'dashicons-arrow-right-alt2' );
+		frameEventsBound = true;
 
-		updateToolbarState();
+		wp.media.frame.on( 'attachment:compat:ready', function() {
+			refreshSidebarCounts();
+		} );
 	}
 
 	$( function() {
@@ -329,6 +496,7 @@
 			if ( getBrowser() ) {
 				injectToolbarFilter();
 				applyInitialFilter();
+				bindFrameEvents();
 			}
 
 			syncModalCategoryFields();

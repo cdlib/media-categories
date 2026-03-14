@@ -54,20 +54,16 @@ class Folder_Sidebar {
 				<div class="media-categories-sidebar__inner">
 					<div class="media-categories-toolbar">
 						<button type="button" class="button button-primary media-categories-toolbar__new" <?php disabled( $can_manage, false ); ?>>
-							<span class="dashicons dashicons-plus-alt2" aria-hidden="true"></span>
 							<?php esc_html_e( 'New Folder', 'media-categories' ); ?>
 						</button>
 						<div class="media-categories-toolbar__actions">
 							<button type="button" class="button media-categories-toolbar__action media-categories-toolbar__rename" <?php disabled( $can_manage, false ); ?>>
-								<span class="dashicons dashicons-edit" aria-hidden="true"></span>
 								<?php esc_html_e( 'Rename', 'media-categories' ); ?>
 							</button>
 							<button type="button" class="button media-categories-toolbar__action media-categories-toolbar__delete" <?php disabled( $can_manage, false ); ?>>
-								<span class="dashicons dashicons-trash" aria-hidden="true"></span>
 								<?php esc_html_e( 'Delete', 'media-categories' ); ?>
 							</button>
 							<button type="button" class="button media-categories-toolbar__action media-categories-toolbar__sort" aria-pressed="false">
-								<span class="dashicons dashicons-sort" aria-hidden="true"></span>
 								<?php esc_html_e( 'Sort', 'media-categories' ); ?>
 							</button>
 						</div>
@@ -80,6 +76,7 @@ class Folder_Sidebar {
 					<ul class="media-categories-tree">
 						<?php $this->render_folder_item( '', __( 'All Files', 'media-categories' ), $this->get_all_files_count(), $current, array(), true ); ?>
 						<?php $this->render_folder_item( 'uncategorized', __( 'Uncategorized', 'media-categories' ), $this->get_uncategorized_count(), $current, array() ); ?>
+						<li class="media-categories-tree__divider" aria-hidden="true"></li>
 						<?php foreach ( $tree as $node ) : ?>
 							<?php $this->render_term_node( $node, $current ); ?>
 						<?php endforeach; ?>
