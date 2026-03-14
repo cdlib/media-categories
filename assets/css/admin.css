@@ -86,7 +86,7 @@
 
 .media-categories-search .dashicons {
 	position: absolute;
-	left: 14px;
+	right: 14px;
 	top: 50%;
 	transform: translateY(-50%);
 	color: #646970;
@@ -100,22 +100,26 @@
 .media-categories-search__input {
 	width: 100%;
 	box-sizing: border-box;
-	padding: 10px 12px 10px 42px;
+	padding: 10px 42px 10px 12px;
 	border: 1px solid #c3c4c7;
 	border-radius: 6px;
 	font-size: 14px;
 	line-height: 1.3;
 }
 
+body.upload-php .attachments-browser .media-toolbar,
 body.upload-php .media-frame-toolbar .media-toolbar {
 	display: flex;
 	align-items: center;
 	flex-wrap: nowrap;
 	gap: 10px;
-	right: 16px;
+	right: 26px;
 	box-sizing: border-box;
+	padding-right: 10px;
+	margin-right: 10px;
 }
 
+body.upload-php .attachments-browser .media-toolbar-secondary,
 body.upload-php .media-frame-toolbar .media-toolbar-secondary {
 	display: flex;
 	align-items: center;
@@ -125,11 +129,17 @@ body.upload-php .media-frame-toolbar .media-toolbar-secondary {
 	min-width: 0;
 }
 
+body.upload-php .attachments-browser .media-toolbar-primary.search-form,
 body.upload-php .media-frame-toolbar .media-toolbar-primary.search-form {
 	margin-left: auto;
-	margin-right: 0;
+	margin-right: 20px;
+	display: flex !important;
+	align-items: center;
+	flex-wrap: nowrap;
 	flex: 0 1 420px;
 	min-width: 300px;
+	gap: 10px;
+	position: relative;
 }
 
 .media-categories-grid-filter.attachment-filters {
@@ -146,6 +156,11 @@ body.upload-php .media-frame-toolbar .media-toolbar-primary.search-form {
 	vertical-align: middle;
 }
 
+body.upload-php .attachments-browser .media-toolbar-secondary > select,
+body.upload-php .attachments-browser .media-toolbar-secondary > .attachment-filters,
+body.upload-php .attachments-browser .media-toolbar-secondary > .view-switch,
+body.upload-php .attachments-browser .media-toolbar-secondary > .button,
+body.upload-php .attachments-browser .media-toolbar-secondary > .spinner,
 body.upload-php .media-frame-toolbar .media-toolbar-secondary > select,
 body.upload-php .media-frame-toolbar .media-toolbar-secondary > .attachment-filters,
 body.upload-php .media-frame-toolbar .media-toolbar-secondary > .view-switch,
@@ -155,18 +170,37 @@ body.upload-php .media-frame-toolbar .media-toolbar-secondary > .spinner {
 	margin: 0;
 }
 
+body.upload-php .attachments-browser .media-toolbar-secondary select,
 body.upload-php .media-frame-toolbar .media-toolbar-secondary select {
 	max-width: 170px;
 }
 
+body.upload-php .attachments-browser .media-toolbar-primary.search-form .media-search-input-label,
+body.upload-php .attachments-browser .media-toolbar-primary.search-form label,
+body.upload-php .media-frame-toolbar .media-toolbar-primary.search-form .media-search-input-label,
 body.upload-php .media-frame-toolbar .media-toolbar-primary.search-form label {
-	margin-right: 10px;
+	display: inline-flex !important;
+	align-items: center;
+	align-self: center;
+	white-space: nowrap;
+	flex: 0 0 auto;
+	width: 96px !important;
+	min-width: 96px;
+	max-width: none !important;
+	line-height: 1;
+	writing-mode: horizontal-tb;
+	margin: 0;
+	position: static !important;
+	top: auto !important;
+	left: auto !important;
 }
 
+body.upload-php .attachments-browser .media-toolbar-primary.search-form input[type="search"],
 body.upload-php .media-frame-toolbar .media-toolbar-primary.search-form input[type="search"] {
 	width: 100%;
 	min-width: 160px;
 	box-sizing: border-box;
+	flex: 1 1 auto;
 }
 
 body.upload-php:not(.media-categories-sidebar-collapsed) .media-categories-grid-filter.attachment-filters {

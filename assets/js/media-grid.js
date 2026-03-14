@@ -10,6 +10,7 @@
 	let sortDescending = false;
 	let frameEventsBound = false;
 	let sidebarRefreshTimer = null;
+	const sidebarSessionKey = 'mediaCategoriesSidebarCollapsed';
 
 	function getBrowser() {
 		if ( ! wp.media.frame || ! wp.media.frame.content ) {
@@ -53,6 +54,39 @@
 		} else {
 			toolbar.append( wrapper );
 		}
+	}
+
+	function normalizeToolbarSearch() {
+		const searchForm = $( '.attachments-browser .media-toolbar-primary.search-form, .media-frame-toolbar .media-toolbar-primary.search-form' ).first();
+		const searchLabel = searchForm.find( '.media-search-input-label' ).first();
+
+		if ( ! searchForm.length || ! searchLabel.length ) {
+			return;
+		}
+
+		searchForm.css( {
+			display: 'flex',
+			alignItems: 'center',
+			flexWrap: 'nowrap',
+			gap: '10px',
+			marginRight: '10px'
+		} );
+
+		searchLabel
+			.html( 'Search&nbsp;media' )
+			.css( {
+				position: 'static',
+				top: 'auto',
+				left: 'auto',
+				display: 'inline-flex',
+				alignItems: 'center',
+				whiteSpace: 'nowrap',
+				minWidth: '96px',
+				width: '96px',
+				maxWidth: 'none',
+				margin: '0',
+				lineHeight: '1'
+			} );
 	}
 
 	function updateLibraryFilter( selected ) {
@@ -154,7 +188,7 @@
 				}
 
 				currentSidebar.replaceWith( nextSidebar );
-				restoreSidebarState();
+				applyStoredSidebarState();
 				updateToolbarState();
 			} );
 		}, 250 );
@@ -193,6 +227,34 @@
 		}
 
 		window.location.href = url.toString();
+	}
+
+	function setSidebarCollapsedState( isCollapsed, persist ) {
+		const $body = $( 'body' );
+		const $toggle = $( '.media-categories-sidebar__toggle' );
+		const $icon = $toggle.find( '.dashicons' );
+
+		$body.toggleClass( 'media-categories-sidebar-collapsed', isCollapsed );
+
+		$toggle
+			.attr( 'aria-expanded', isCollapsed ? 'false' : 'true' )
+			.attr( 'aria-label', isCollapsed ? data.strings.expandLabel : data.strings.collapseLabel );
+
+		$icon.toggleClass( 'dashicons-arrow-left-alt2', ! isCollapsed );
+		$icon.toggleClass( 'dashicons-arrow-right-alt2', isCollapsed );
+
+		if ( false !== persist ) {
+			window.sessionStorage.setItem( sidebarSessionKey, isCollapsed ? '1' : '0' );
+		}
+
+		updateToolbarState();
+	}
+
+	function applyStoredSidebarState() {
+		const storedValue = window.sessionStorage.getItem( sidebarSessionKey );
+		const isCollapsed = '1' === storedValue;
+
+		setSidebarCollapsedState( isCollapsed, false );
 	}
 
 	function sortFolderTree( $list, descending ) {
@@ -442,32 +504,9 @@
 		} );
 
 		$( document ).on( 'click', '.media-categories-sidebar__toggle', function() {
-			const body = $( 'body' );
-			const isCollapsed = body.toggleClass( 'media-categories-sidebar-collapsed' ).hasClass( 'media-categories-sidebar-collapsed' );
-			const icon = $( this ).find( '.dashicons' );
-
-			$( this )
-				.attr( 'aria-expanded', isCollapsed ? 'false' : 'true' )
-				.attr( 'aria-label', isCollapsed ? data.strings.expandLabel : data.strings.collapseLabel );
-
-			icon.toggleClass( 'dashicons-arrow-left-alt2', ! isCollapsed );
-			icon.toggleClass( 'dashicons-arrow-right-alt2', isCollapsed );
-
-			window.localStorage.setItem( 'mediaCategoriesSidebarCollapsed', isCollapsed ? '1' : '0' );
+			const isCollapsed = ! $( 'body' ).hasClass( 'media-categories-sidebar-collapsed' );
+			setSidebarCollapsedState( isCollapsed, true );
 		} );
-	}
-
-	function restoreSidebarState() {
-		$( 'body' ).removeClass( 'media-categories-sidebar-collapsed' );
-		$( '.media-categories-sidebar__toggle' )
-			.attr( 'aria-expanded', 'true' )
-			.attr( 'aria-label', data.strings.collapseLabel )
-			.find( '.dashicons' )
-			.removeClass( 'dashicons-arrow-right-alt2' )
-			.addClass( 'dashicons-arrow-left-alt2' );
-
-		window.localStorage.setItem( 'mediaCategoriesSidebarCollapsed', '0' );
-		updateToolbarState();
 	}
 
 	function bindFrameEvents() {
@@ -490,11 +529,12 @@
 		bindSidebarClicks();
 		bindFolderControls();
 		syncModalCategoryFields();
-		restoreSidebarState();
+		applyStoredSidebarState();
 
 		const interval = window.setInterval( function() {
 			if ( getBrowser() ) {
 				injectToolbarFilter();
+				normalizeToolbarSearch();
 				applyInitialFilter();
 				bindFrameEvents();
 			}

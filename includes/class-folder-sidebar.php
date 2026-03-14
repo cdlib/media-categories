@@ -14,11 +14,11 @@ defined( 'ABSPATH' ) || exit;
  */
 class Folder_Sidebar {
 	/**
-	 * Cached direct counts keyed by term ID.
+	 * Cached visible counts keyed by term ID.
 	 *
 	 * @var array<int,int>
 	 */
-	private $direct_counts = array();
+	private $term_counts = array();
 
 	/**
 	 * Register hooks.
@@ -180,7 +180,7 @@ class Folder_Sidebar {
 			$indexed[ $term->term_id ] = array(
 				'term_id'  => (int) $term->term_id,
 				'name'     => $term->name,
-				'count'    => $this->get_direct_term_count( (int) $term->term_id ),
+				'count'    => $this->get_visible_term_count( (int) $term->term_id ),
 				'parent'   => (int) $term->parent,
 				'children' => array(),
 			);
@@ -196,23 +196,18 @@ class Folder_Sidebar {
 			}
 		}
 
-		foreach ( $tree as &$root_node ) {
-			$this->sum_descendant_counts( $root_node );
-		}
-		unset( $root_node );
-
 		return $tree;
 	}
 
 	/**
-	 * Count attachments directly assigned to a term.
+	 * Count attachments visible for a term filter, including descendants.
 	 *
 	 * @param int $term_id Term ID.
 	 * @return int
 	 */
-	private function get_direct_term_count( $term_id ) {
-		if ( isset( $this->direct_counts[ $term_id ] ) ) {
-			return $this->direct_counts[ $term_id ];
+	private function get_visible_term_count( $term_id ) {
+		if ( isset( $this->term_counts[ $term_id ] ) ) {
+			return $this->term_counts[ $term_id ];
 		}
 
 		$query = new \WP_Query(
@@ -229,34 +224,15 @@ class Folder_Sidebar {
 						'taxonomy'         => TAXONOMY,
 						'field'            => 'term_id',
 						'terms'            => array( $term_id ),
-						'include_children' => false,
+						'include_children' => true,
 					),
 				),
 			)
 		);
 
-		$this->direct_counts[ $term_id ] = (int) $query->found_posts;
+		$this->term_counts[ $term_id ] = (int) $query->found_posts;
 
-		return $this->direct_counts[ $term_id ];
-	}
-
-	/**
-	 * Sum descendant counts into parent nodes.
-	 *
-	 * @param array $node Tree node.
-	 * @return int
-	 */
-	private function sum_descendant_counts( &$node ) {
-		$total = (int) $node['count'];
-
-		foreach ( $node['children'] as &$child ) {
-			$total += $this->sum_descendant_counts( $child );
-		}
-		unset( $child );
-
-		$node['count'] = $total;
-
-		return $total;
+		return $this->term_counts[ $term_id ];
 	}
 
 	/**
