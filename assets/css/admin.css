@@ -133,12 +133,9 @@ body.upload-php .attachments-browser .media-toolbar-primary.search-form,
 body.upload-php .media-frame-toolbar .media-toolbar-primary.search-form {
 	margin-left: auto;
 	margin-right: 20px;
-	display: flex !important;
-	align-items: center;
-	flex-wrap: nowrap;
+	display: block !important;
 	flex: 0 1 420px;
 	min-width: 300px;
-	gap: 10px;
 	position: relative;
 }
 
@@ -179,20 +176,7 @@ body.upload-php .attachments-browser .media-toolbar-primary.search-form .media-s
 body.upload-php .attachments-browser .media-toolbar-primary.search-form label,
 body.upload-php .media-frame-toolbar .media-toolbar-primary.search-form .media-search-input-label,
 body.upload-php .media-frame-toolbar .media-toolbar-primary.search-form label {
-	display: inline-flex !important;
-	align-items: center;
-	align-self: center;
-	white-space: nowrap;
-	flex: 0 0 auto;
-	width: 96px !important;
-	min-width: 96px;
-	max-width: none !important;
-	line-height: 1;
-	writing-mode: horizontal-tb;
-	margin: 0;
-	position: static !important;
-	top: auto !important;
-	left: auto !important;
+	display: none !important;
 }
 
 body.upload-php .attachments-browser .media-toolbar-primary.search-form input[type="search"],

@@ -59,34 +59,24 @@
 	function normalizeToolbarSearch() {
 		const searchForm = $( '.attachments-browser .media-toolbar-primary.search-form, .media-frame-toolbar .media-toolbar-primary.search-form' ).first();
 		const searchLabel = searchForm.find( '.media-search-input-label' ).first();
+		const searchInput = searchForm.find( 'input[type="search"]' ).first();
 
-		if ( ! searchForm.length || ! searchLabel.length ) {
+		if ( ! searchForm.length || ! searchInput.length ) {
 			return;
 		}
 
 		searchForm.css( {
-			display: 'flex',
-			alignItems: 'center',
-			flexWrap: 'nowrap',
-			gap: '10px',
+			display: 'block',
 			marginRight: '10px'
 		} );
 
-		searchLabel
-			.html( 'Search&nbsp;media' )
-			.css( {
-				position: 'static',
-				top: 'auto',
-				left: 'auto',
-				display: 'inline-flex',
-				alignItems: 'center',
-				whiteSpace: 'nowrap',
-				minWidth: '96px',
-				width: '96px',
-				maxWidth: 'none',
-				margin: '0',
-				lineHeight: '1'
-			} );
+		if ( searchLabel.length ) {
+			searchLabel.remove();
+		}
+
+		searchInput.attr( 'placeholder', 'Search media' ).css( {
+			width: '100%'
+		} );
 	}
 
 	function updateLibraryFilter( selected ) {
@@ -516,7 +506,15 @@
 
 		frameEventsBound = true;
 
-		wp.media.frame.on( 'attachment:compat:ready', function() {
+		$( document ).ajaxSuccess( function( event, xhr, settings ) {
+			const requestData = settings && settings.data ? settings.data.toString() : '';
+			const requestUrl = settings && settings.url ? settings.url.toString() : '';
+			const isCompatSave = requestData.indexOf( 'action=save-attachment-compat' ) !== -1 || requestUrl.indexOf( 'save-attachment-compat' ) !== -1;
+
+			if ( ! isCompatSave ) {
+				return;
+			}
+
 			refreshSidebarCounts();
 		} );
 	}
