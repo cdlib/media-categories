@@ -510,8 +510,9 @@
 			const requestData = settings && settings.data ? settings.data.toString() : '';
 			const requestUrl = settings && settings.url ? settings.url.toString() : '';
 			const isCompatSave = requestData.indexOf( 'action=save-attachment-compat' ) !== -1 || requestUrl.indexOf( 'save-attachment-compat' ) !== -1;
+			const isAttachmentDelete = requestData.indexOf( 'action=delete-post' ) !== -1 || requestUrl.indexOf( 'delete-post' ) !== -1;
 
-			if ( ! isCompatSave ) {
+			if ( ! isCompatSave && ! isAttachmentDelete ) {
 				return;
 			}
 
