@@ -17,6 +17,7 @@ require_once MEDIA_CATEGORIES_DIR . 'includes/class-attachment-fields.php';
 require_once MEDIA_CATEGORIES_DIR . 'includes/class-media-filters.php';
 require_once MEDIA_CATEGORIES_DIR . 'includes/class-folder-sidebar.php';
 require_once MEDIA_CATEGORIES_DIR . 'includes/class-assets.php';
+require_once MEDIA_CATEGORIES_DIR . 'includes/class-updater.php';
 
 /**
  * Coordinates plugin services.
@@ -83,6 +84,7 @@ final class Plugin {
 			new Media_Filters(),
 			new Folder_Sidebar(),
 			new Assets(),
+			new Updater(),
 		);
 
 		foreach ( $this->services as $service ) {
