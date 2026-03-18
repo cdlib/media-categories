@@ -27,6 +27,7 @@ class Updater {
 	 */
 	public function register() {
 		add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'inject_update' ) );
+		add_filter( 'site_transient_update_plugins', array( $this, 'inject_update' ) );
 		add_filter( 'plugins_api', array( $this, 'filter_plugin_information' ), 20, 3 );
 	}
 
@@ -46,7 +47,7 @@ class Updater {
 			return $transient;
 		}
 
-		$remote_info = $this->get_remote_info();
+		$remote_info = $this->get_remote_info( $this->should_force_refresh() );
 		if ( empty( $remote_info['version'] ) || empty( $remote_info['download_url'] ) ) {
 			return $transient;
 		}
@@ -71,6 +72,15 @@ class Updater {
 		);
 
 		return $transient;
+	}
+
+	/**
+	 * Determine whether the current request should bypass cached update info.
+	 *
+	 * @return bool
+	 */
+	private function should_force_refresh() {
+		return isset( $_GET['force-check'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['force-check'] ) );
 	}
 
 	/**
