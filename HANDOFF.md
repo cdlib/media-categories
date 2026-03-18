@@ -40,7 +40,7 @@ The user wants the experience to feel similar to folder-based media plugins, but
 
 - `media-categories.php`
   - Main plugin header
-  - Current plugin version is `0.1.4`
+  - Current plugin version is `0.1.5`
   - `Author` is set to `Eric Satzman`
   - `Update URI` points to the GitHub repo to avoid WP.org plugin collision
   - Defines self-hosted update constants:
@@ -168,7 +168,7 @@ The user wants the experience to feel similar to folder-based media plugins, but
 - The plugin now has a dedicated updater class modeled after the Dynamic Alt Tags updater.
 - Update metadata is pulled from:
   - JSON: `https://satzman.com/plugin-updates/media-categories/info.json`
-  - ZIP: `https://satzman.com/plugin-updates/media-categories/media-categories-0.1.4.zip`
+  - ZIP: `https://satzman.com/plugin-updates/media-categories/media-categories-0.1.5.zip`
 - Native update icons are provided to core update UI via the updater response.
 
 ### 10. Icon assets
@@ -204,7 +204,7 @@ The user wants the experience to feel similar to folder-based media plugins, but
 
 ### Media Categories updater / plugin info
 
-- Plugin version and stable tag are now `0.1.4`.
+- Plugin version and stable tag are now `0.1.5`.
 - WordPress should use the self-hosted updater instead of relying on WP.org matching.
 - `Dashboard > Updates` should display the native large plugin icon from the updater metadata.
 
