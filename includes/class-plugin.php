@@ -75,6 +75,8 @@ final class Plugin {
 	 * @return void
 	 */
 	public function init() {
+		add_filter( 'all_plugins', array( $this, 'filter_plugin_author_link' ) );
+
 		$this->services = array(
 			new Capabilities(),
 			new Taxonomy(),
@@ -92,5 +94,23 @@ final class Plugin {
 				$service->register();
 			}
 		}
+	}
+
+	/**
+	 * Add a mailto author link for this plugin on the Plugins screen.
+	 *
+	 * @param array<string,array<string,mixed>> $plugins All discovered plugins.
+	 * @return array<string,array<string,mixed>>
+	 */
+	public function filter_plugin_author_link( $plugins ) {
+		$plugin_file = plugin_basename( MEDIA_CATEGORIES_FILE );
+
+		if ( ! isset( $plugins[ $plugin_file ] ) || ! is_array( $plugins[ $plugin_file ] ) ) {
+			return $plugins;
+		}
+
+		$plugins[ $plugin_file ]['Author'] = '<a href="mailto:esatzman@ucop.edu">Eric Satzman</a>';
+
+		return $plugins;
 	}
 }
