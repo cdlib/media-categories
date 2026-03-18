@@ -1,56 +1,40 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
-<title id="title">Media Categories</title>
-<desc id="desc">A bold folder icon with organized media category tiles for the Media Categories plugin.</desc>
-<defs>
-<linearGradient id="bg" x1="18%" y1="10%" x2="88%" y2="100%">
-<stop offset="0%" stop-color="#eef7ff"/>
-<stop offset="52%" stop-color="#d9ebff"/>
-<stop offset="100%" stop-color="#c4def7"/>
-</linearGradient>
-<linearGradient id="folderFront" x1="0%" y1="0%" x2="0%" y2="100%">
-<stop offset="0%" stop-color="#ffd56b"/>
-<stop offset="100%" stop-color="#eda928"/>
-</linearGradient>
-<linearGradient id="folderTop" x1="0%" y1="0%" x2="100%" y2="100%">
-<stop offset="0%" stop-color="#ffe6a1"/>
-<stop offset="100%" stop-color="#f8c655"/>
-</linearGradient>
-<linearGradient id="chipBlue" x1="0%" y1="0%" x2="100%" y2="100%">
-<stop offset="0%" stop-color="#4cb2ff"/>
-<stop offset="100%" stop-color="#1d6fd1"/>
-</linearGradient>
-<linearGradient id="chipGreen" x1="0%" y1="0%" x2="100%" y2="100%">
-<stop offset="0%" stop-color="#70d8b6"/>
-<stop offset="100%" stop-color="#289570"/>
-</linearGradient>
-<linearGradient id="chipCoral" x1="0%" y1="0%" x2="100%" y2="100%">
-<stop offset="0%" stop-color="#ff9478"/>
-<stop offset="100%" stop-color="#df5d47"/>
-</linearGradient>
-<filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
-<feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#376388" flood-opacity=".18"/>
-</filter>
-</defs>
-<rect width="256" height="256" rx="52" fill="url(#bg)"/>
-<circle cx="54" cy="58" r="18" fill="#ffffff" opacity=".38"/>
-<circle cx="208" cy="50" r="10" fill="#ffffff" opacity=".34"/>
-<circle cx="196" cy="198" r="14" fill="#ffffff" opacity=".22"/>
-<g filter="url(#shadow)">
-<path d="M42 91h60l18-20h36c13.3 0 24.8 9 28.4 21.8L192 122H42z" fill="url(#folderTop)" stroke="#8f7841" stroke-width="6" stroke-linejoin="round"/>
-<path d="M34 114h188c14.4 0 26 11.6 26 26v46c0 14.4-11.6 26-26 26H34c-14.4 0-26-11.6-26-26v-46c0-14.4 11.6-26 26-26z" fill="url(#folderFront)" stroke="#8f7841" stroke-width="6"/>
-</g>
-<rect x="56" y="134" width="48" height="48" rx="12" fill="url(#chipBlue)"/>
-<rect x="112" y="134" width="48" height="48" rx="12" fill="url(#chipGreen)"/>
-<rect x="168" y="134" width="32" height="48" rx="12" fill="url(#chipCoral)"/>
-<circle cx="80" cy="157" r="8" fill="#fff"/>
-<path d="M68 172c4-7 10-11 17-11 6 0 11 2 15 7" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="6"/>
-<path d="M124 169l10-12 9 10 11-13" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="6"/>
-<circle cx="183" cy="148" r="6" fill="#fff"/>
-<circle cx="183" cy="160" r="6" fill="#fff" opacity=".85"/>
-<circle cx="183" cy="172" r="6" fill="#fff" opacity=".7"/>
-<path d="M59 214h138" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-opacity=".45" stroke-width="6"/>
-<g transform="translate(152 58)">
-<rect x="0" y="0" width="64" height="34" rx="14" fill="#103c73"/>
-<text x="32" y="23" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle">MC</text>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-labelledby="title desc">
+  <title id="title">Media Categories</title>
+  <desc id="desc">A suite-matched media card icon with a category badge for the Media Categories plugin.</desc>
+  <defs>
+    <linearGradient id="mediaCategoriesBg" x1="5" y1="4" x2="27" y2="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1d2736"/>
+      <stop offset="0.55" stop-color="#244762"/>
+      <stop offset="1" stop-color="#0f9ed5"/>
+    </linearGradient>
+    <linearGradient id="mediaCategoriesCard" x1="8" y1="8" x2="24" y2="22" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f9fcff"/>
+      <stop offset="1" stop-color="#d9edf9"/>
+    </linearGradient>
+    <linearGradient id="mediaCategoriesBadge" x1="14" y1="18" x2="24" y2="26" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffc770"/>
+      <stop offset="1" stop-color="#ff9f43"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="28" height="28" rx="8" fill="url(#mediaCategoriesBg)"/>
+  <rect x="7.5" y="8.5" width="14" height="11.2" rx="2.8" fill="url(#mediaCategoriesCard)"/>
+  <circle cx="11" cy="12" r="1.45" fill="#0f9ed5"/>
+  <path d="M9.6 17.6l2.9-3.35 2.35 2.35 2.15-2.7 2.35 3.7z" fill="#2f617e"/>
+  <path d="M18.2 17.9h4.8c1.25 0 2.25 1 2.25 2.25v3.35c0 1.25-1 2.25-2.25 2.25h-9.05c-1.25 0-2.25-1-2.25-2.25v-3.35c0-1.25 1-2.25 2.25-2.25h2.05l1.65-1.95z" fill="url(#mediaCategoriesBadge)"/>
+  <g transform="translate(13.48 20.33) scale(0.5)">
+    <g fill="#fff7eb" stroke="#7b4b00" stroke-linejoin="round" stroke-width="0.45">
+      <path d="M0 1.1h2l.45-.6h1.25c.42 0 .78.28.9.68l.18.62H0z"/>
+      <path d="M-.25 1.85h5.1c.35 0 .65.3.65.65v1.15c0 .35-.3.65-.65.65h-5.1c-.35 0-.65-.3-.65-.65V2.5c0-.35.3-.65.65-.65z"/>
+    </g>
+    <g transform="translate(7.4 0)" fill="#fff7eb" stroke="#7b4b00" stroke-linejoin="round" stroke-width="0.45">
+      <path d="M0 1.1h2l.45-.6h1.25c.42 0 .78.28.9.68l.18.62H0z"/>
+      <path d="M-.25 1.85h5.1c.35 0 .65.3.65.65v1.15c0 .35-.3.65-.65.65h-5.1c-.35 0-.65-.3-.65-.65V2.5c0-.35.3-.65.65-.65z"/>
+    </g>
+    <g transform="translate(14.8 0)" fill="#fff7eb" stroke="#7b4b00" stroke-linejoin="round" stroke-width="0.45">
+      <path d="M0 1.1h2l.45-.6h1.25c.42 0 .78.28.9.68l.18.62H0z"/>
+      <path d="M-.25 1.85h5.1c.35 0 .65.3.65.65v1.15c0 .35-.3.65-.65.65h-5.1c-.35 0-.65-.3-.65-.65V2.5c0-.35.3-.65.65-.65z"/>
+    </g>
+  </g>
+  <path d="M23.9 8.1l.55 1.55 1.55.55-1.55.55-.55 1.55-.55-1.55-1.55-.55 1.55-.55z" fill="#ffffff"/>
+  <path d="M25.9 13.4l.33.95.95.33-.95.33-.33.95-.33-.95-.95-.33.95-.33z" fill="#bfe8fb"/>
 </svg>
