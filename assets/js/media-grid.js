@@ -332,13 +332,14 @@
 		return items;
 	}
 
-	function openCreateFolderDialog( defaultParentId ) {
+	function openCreateFolderDialog( defaultParentId, triggerElement ) {
 		const deferred = $.Deferred();
 		const options = getParentOptions();
 		const overlay = $( '<div class="media-categories-dialog-backdrop"></div>' );
 		const dialog = $( '<div class="media-categories-dialog" role="dialog" aria-modal="true"></div>' );
 		const headingId = 'media-categories-create-folder-title';
 		const parentValue = defaultParentId || '0';
+		const previousFocus = triggerElement && triggerElement.length ? triggerElement.first() : $( document.activeElement );
 		let optionsHtml = '<option value="0">' + data.strings.noneOption + '</option>';
 
 		options.forEach( function( option ) {
@@ -372,6 +373,45 @@
 
 		function closeDialog() {
 			overlay.remove();
+
+			if ( previousFocus && previousFocus.length ) {
+				previousFocus.trigger( 'focus' );
+			}
+		}
+
+		function getFocusableElements() {
+			return dialog.find( 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])' ).filter( ':visible:not(:disabled)' );
+		}
+
+		function trapFocus( event ) {
+			if ( 'Escape' === event.key ) {
+				event.preventDefault();
+				closeDialog();
+				deferred.reject();
+				return;
+			}
+
+			if ( 'Tab' !== event.key ) {
+				return;
+			}
+
+			const focusable = getFocusableElements();
+
+			if ( ! focusable.length ) {
+				event.preventDefault();
+				return;
+			}
+
+			const first = focusable.first().get( 0 );
+			const last = focusable.last().get( 0 );
+
+			if ( event.shiftKey && document.activeElement === first ) {
+				event.preventDefault();
+				last.focus();
+			} else if ( ! event.shiftKey && document.activeElement === last ) {
+				event.preventDefault();
+				first.focus();
+			}
 		}
 
 		dialog.on( 'click', '.media-categories-dialog__cancel', function() {
@@ -385,6 +425,8 @@
 				deferred.reject();
 			}
 		} );
+
+		overlay.on( 'keydown', trapFocus );
 
 		dialog.on( 'submit', '.media-categories-dialog__form', function( event ) {
 			event.preventDefault();
@@ -416,7 +458,7 @@
 
 			const selectedFolder = getSelectedFolder();
 			const defaultParentId = selectedFolder.length && selectedFolder.data( 'virtual-folder' ) !== 'yes' ? String( selectedFolder.data( 'term-id' ) || 0 ) : '0';
-			openCreateFolderDialog( defaultParentId ).done( function( result ) {
+			openCreateFolderDialog( defaultParentId, $( this ) ).done( function( result ) {
 				performFolderAction( 'media_categories_create_term', {
 					name: result.name,
 					parent_id: result.parentId

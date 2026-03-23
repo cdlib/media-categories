@@ -76,7 +76,7 @@ class Attachment_Fields {
 			return;
 		}
 
-		if ( ! current_user_can( 'upload_files' ) ) {
+		if ( ! current_user_can( 'upload_files' ) || ! current_user_can( 'edit_post', $attachment_id ) ) {
 			return;
 		}
 
@@ -126,7 +126,7 @@ class Attachment_Fields {
 	 * @return array
 	 */
 	public function save_modal_fields( $post, $attachment ) {
-		if ( ! current_user_can( 'upload_files' ) ) {
+		if ( ! current_user_can( 'upload_files' ) || ! current_user_can( 'edit_post', $post['ID'] ) ) {
 			return $post;
 		}
 
