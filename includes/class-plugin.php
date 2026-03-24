@@ -76,6 +76,7 @@ final class Plugin {
 	 */
 	public function init() {
 		add_filter( 'all_plugins', array( $this, 'filter_plugin_author_link' ) );
+		add_filter( 'plugin_row_meta', array( $this, 'filter_plugin_row_meta' ), 10, 4 );
 
 		$this->services = array(
 			new Capabilities(),
@@ -112,5 +113,34 @@ final class Plugin {
 		$plugins[ $plugin_file ]['Author'] = '<a href="mailto:esatzman@ucop.edu">Eric Satzman</a>';
 
 		return $plugins;
+	}
+
+	/**
+	 * Rename the plugin site link on the Plugins screen.
+	 *
+	 * @param string[] $plugin_meta Plugin row meta links.
+	 * @param string   $plugin_file Plugin file path.
+	 * @param array    $plugin_data Plugin header data.
+	 * @param string   $status Plugin status.
+	 * @return string[]
+	 */
+	public function filter_plugin_row_meta( $plugin_meta, $plugin_file, $plugin_data, $status ) {
+		unset( $plugin_data, $status );
+
+		if ( plugin_basename( MEDIA_CATEGORIES_FILE ) !== $plugin_file ) {
+			return $plugin_meta;
+		}
+
+		foreach ( $plugin_meta as $index => $link ) {
+			if ( false !== strpos( $link, 'href="https://github.com/ericsatzman/media-categories"' ) ) {
+				$plugin_meta[ $index ] = preg_replace(
+					'#>[^<]+<#',
+					'>' . esc_html__( 'View Details', 'media-categories' ) . '<',
+					$link
+				);
+			}
+		}
+
+		return $plugin_meta;
 	}
 }
