@@ -6,8 +6,8 @@
  * Version:     1.0.1
  * Author:      Eric Satzman
  * Update URI:  https://github.com/ericsatzman/media-categories
- * License:     MIT
- * License URI: https://opensource.org/licenses/MIT
+ * License:     GPL-2.0-or-later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: media-categories
  *
  * @package MediaCategories
