@@ -10,6 +10,17 @@ The plugin is taxonomy-based rather than filesystem-based. Media items can
 belong to multiple categories, and parent categories can be used like virtual
 folders that include descendant items.
 
+## Open Source
+
+This project is open source under the MIT License. See [LICENSE](/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories/LICENSE) for the full text.
+
+## Getting Started
+
+1. Clone the repository.
+2. Place the plugin in your WordPress installation under `wp-content/plugins/media-categories`.
+3. Activate `Media Categories` from the WordPress admin.
+4. Optional: install Composer dev dependencies for linting and tests.
+
 ## Features
 
 - Native taxonomy management under `Media > Media Categories`
@@ -58,6 +69,18 @@ composer lint
 composer test
 ```
 
+## Contributing
+
+Contributions are welcome. Please read [CONTRIBUTING.md](/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories/CONTRIBUTING.md) before opening a pull request.
+
+## Security
+
+If you discover a security issue, please follow the reporting guidance in [SECURITY.md](/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories/SECURITY.md) instead of opening a public issue.
+
+## Code of Conduct
+
+Participation in this project is governed by [CODE_OF_CONDUCT.md](/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories/CODE_OF_CONDUCT.md).
+
 ## Current Behavior Notes
 
 - Parent category filters include descendant attachments.
@@ -72,3 +95,7 @@ composer test
 The plugin is in a refinement and stabilization phase. Core media-category
 assignment, filtering, and virtual-folder behavior are implemented, with most
 remaining work centered around browser validation and UI polish.
+
+## License
+
+MIT
