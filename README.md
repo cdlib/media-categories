@@ -1,5 +1,7 @@
 # Media Categories
 
+Current version: `1.0.1`
+
 Media Categories is a WordPress plugin that adds a hierarchical `media_category`
 taxonomy to attachments and presents those terms as folder-like organization
 tools inside the Media Library.
