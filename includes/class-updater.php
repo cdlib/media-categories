@@ -21,23 +21,86 @@ class Updater {
 	const REMOTE_INFO_TRANSIENT_KEY = 'media_categories_update_info';
 
 	/**
+	 * Allowed update package host.
+	 *
+	 * @var string
+	 */
+	const UPDATE_PACKAGE_HOST = 'satzman.com';
+
+	/**
+	 * Allowed update package path prefix.
+	 *
+	 * @var string
+	 */
+	const UPDATE_PACKAGE_PATH_PREFIX = '/plugin-updates/media-categories/';
+
+	/**
+	 * External update hostname.
+	 *
+	 * @var string
+	 */
+	const UPDATE_HOSTNAME = 'satzman.com';
+
+	/**
+	 * Canonical repository URL shown in WordPress plugin UI.
+	 *
+	 * @var string
+	 */
+	const REPOSITORY_URL = 'https://github.com/ericsatzman/media-categories';
+
+	/**
 	 * Register hooks.
 	 *
 	 * @return void
 	 */
 	public function register() {
-		add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'inject_update' ) );
-		add_filter( 'site_transient_update_plugins', array( $this, 'inject_update' ) );
+		add_filter( 'update_plugins_' . self::UPDATE_HOSTNAME, array( $this, 'filter_update' ), 10, 4 );
+		add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'inject_legacy_update' ) );
 		add_filter( 'plugins_api', array( $this, 'filter_plugin_information' ), 20, 3 );
 	}
 
 	/**
-	 * Inject update details into the WordPress update transient.
+	 * Provide update details for the plugin Update URI hostname.
+	 *
+	 * @param false|array<string,mixed>|object $update Existing update payload.
+	 * @param array<string,string>             $plugin_data Plugin header data.
+	 * @param string                           $plugin_file Plugin basename.
+	 * @param string[]                         $locales Installed locales.
+	 * @return false|array<string,mixed>|object
+	 */
+	public function filter_update( $update, $plugin_data, $plugin_file, $locales ) {
+		unset( $plugin_data, $locales );
+
+		if ( plugin_basename( MEDIA_CATEGORIES_FILE ) !== $plugin_file ) {
+			return $update;
+		}
+
+		$remote_info = $this->get_remote_info( $this->should_force_refresh() );
+		if ( empty( $remote_info['version'] ) || empty( $remote_info['download_url'] ) ) {
+			return $update;
+		}
+
+		return (object) array(
+			'id'           => 'https://satzman.com/plugin-updates/media-categories/',
+			'slug'         => 'media-categories',
+			'version'      => (string) $remote_info['version'],
+			'new_version'  => (string) $remote_info['version'],
+			'url'          => self::REPOSITORY_URL,
+			'package'      => (string) $remote_info['download_url'],
+			'requires'     => isset( $remote_info['requires'] ) ? (string) $remote_info['requires'] : '',
+			'tested'       => isset( $remote_info['tested'] ) ? (string) $remote_info['tested'] : '',
+			'requires_php' => isset( $remote_info['requires_php'] ) ? (string) $remote_info['requires_php'] : '',
+			'icons'        => $this->get_icon_urls(),
+		);
+	}
+
+	/**
+	 * Inject update details into the WordPress update transient for legacy sites.
 	 *
 	 * @param \stdClass|mixed $transient Update transient.
 	 * @return \stdClass|mixed
 	 */
-	public function inject_update( $transient ) {
+	public function inject_legacy_update( $transient ) {
 		if ( ! is_object( $transient ) || empty( $transient->checked ) || ! is_array( $transient->checked ) ) {
 			return $transient;
 		}
@@ -64,7 +127,7 @@ class Updater {
 			'plugin'       => $plugin_file,
 			'new_version'  => $remote_version,
 			'package'      => (string) $remote_info['download_url'],
-			'url'          => isset( $remote_info['homepage'] ) ? (string) $remote_info['homepage'] : 'https://satzman.com/',
+			'url'          => self::REPOSITORY_URL,
 			'requires'     => isset( $remote_info['requires'] ) ? (string) $remote_info['requires'] : '',
 			'tested'       => isset( $remote_info['tested'] ) ? (string) $remote_info['tested'] : '',
 			'requires_php' => isset( $remote_info['requires_php'] ) ? (string) $remote_info['requires_php'] : '',
@@ -111,7 +174,7 @@ class Updater {
 			'slug'          => 'media-categories',
 			'version'       => (string) $remote_info['version'],
 			'author'        => '<a href="https://satzman.com/">Eric Satzman</a>',
-			'homepage'      => isset( $remote_info['homepage'] ) ? (string) $remote_info['homepage'] : 'https://satzman.com/',
+			'homepage'      => self::REPOSITORY_URL,
 			'requires'      => isset( $remote_info['requires'] ) ? (string) $remote_info['requires'] : '',
 			'tested'        => isset( $remote_info['tested'] ) ? (string) $remote_info['tested'] : '',
 			'requires_php'  => isset( $remote_info['requires_php'] ) ? (string) $remote_info['requires_php'] : '',
@@ -175,11 +238,16 @@ class Updater {
 			return array();
 		}
 
+		$download_url = isset( $decoded['download_url'] ) ? esc_url_raw( (string) $decoded['download_url'] ) : MEDIA_CATEGORIES_UPDATE_PACKAGE_URL;
+		if ( ! $this->is_allowed_update_url( $download_url ) ) {
+			$download_url = MEDIA_CATEGORIES_UPDATE_PACKAGE_URL;
+		}
+
 		$remote_info = array(
 			'name'          => isset( $decoded['name'] ) ? sanitize_text_field( (string) $decoded['name'] ) : 'Media Categories',
 			'version'       => isset( $decoded['version'] ) ? sanitize_text_field( (string) $decoded['version'] ) : '',
-			'download_url'  => isset( $decoded['download_url'] ) ? esc_url_raw( (string) $decoded['download_url'] ) : MEDIA_CATEGORIES_UPDATE_PACKAGE_URL,
-			'homepage'      => isset( $decoded['homepage'] ) ? esc_url_raw( (string) $decoded['homepage'] ) : 'https://satzman.com/',
+			'download_url'  => $download_url,
+			'homepage'      => self::REPOSITORY_URL,
 			'requires'      => isset( $decoded['requires'] ) ? sanitize_text_field( (string) $decoded['requires'] ) : '',
 			'tested'        => isset( $decoded['tested'] ) ? sanitize_text_field( (string) $decoded['tested'] ) : '',
 			'requires_php'  => isset( $decoded['requires_php'] ) ? sanitize_text_field( (string) $decoded['requires_php'] ) : '',
@@ -190,6 +258,34 @@ class Updater {
 		set_site_transient( self::REMOTE_INFO_TRANSIENT_KEY, $remote_info, 6 * HOUR_IN_SECONDS );
 
 		return $remote_info;
+	}
+
+	/**
+	 * Whether the remote update package URL matches the expected host and path.
+	 *
+	 * @param string $url Candidate update URL.
+	 * @return bool
+	 */
+	private function is_allowed_update_url( $url ) {
+		$url = esc_url_raw( (string) $url );
+		if ( '' === $url ) {
+			return false;
+		}
+
+		$parts = wp_parse_url( $url );
+		if ( ! is_array( $parts ) ) {
+			return false;
+		}
+
+		$scheme = isset( $parts['scheme'] ) ? strtolower( (string) $parts['scheme'] ) : '';
+		$host   = isset( $parts['host'] ) ? strtolower( (string) $parts['host'] ) : '';
+		$path   = isset( $parts['path'] ) ? (string) $parts['path'] : '';
+
+		if ( 'https' !== $scheme || self::UPDATE_PACKAGE_HOST !== $host ) {
+			return false;
+		}
+
+		return 0 === strpos( $path, self::UPDATE_PACKAGE_PATH_PREFIX );
 	}
 
 	/**

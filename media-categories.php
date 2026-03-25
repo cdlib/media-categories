@@ -5,7 +5,7 @@
  * Description: Adds hierarchical media categories, media-library filtering, and virtual folders for attachments.
  * Version:     1.0.1
  * Author:      Eric Satzman
- * Update URI:  https://github.com/ericsatzman/media-categories
+ * Update URI:  https://satzman.com/plugin-updates/media-categories/
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: media-categories
