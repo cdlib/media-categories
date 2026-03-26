@@ -255,7 +255,7 @@ class Updater {
 			'sections'      => $this->normalize_sections( isset( $decoded['sections'] ) ? $decoded['sections'] : array() ),
 		);
 
-		set_site_transient( self::REMOTE_INFO_TRANSIENT_KEY, $remote_info, 6 * HOUR_IN_SECONDS );
+		set_site_transient( self::REMOTE_INFO_TRANSIENT_KEY, $remote_info, HOUR_IN_SECONDS );
 
 		return $remote_info;
 	}
