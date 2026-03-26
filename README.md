@@ -12,7 +12,7 @@ folders that include descendant items.
 
 ## Open Source
 
-This project is open source under the GPL-2.0-or-later license. See [LICENSE](/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories/LICENSE) for the full text.
+This project is open source under the MIT License. See [LICENSE](/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories/LICENSE) for the full text.
 
 ## Getting Started
 
@@ -98,4 +98,4 @@ remaining work centered around browser validation and UI polish.
 
 ## License
 
-GPL-2.0-or-later
+MIT

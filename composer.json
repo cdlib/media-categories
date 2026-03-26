@@ -1,7 +1,7 @@
 {
   "name": "codex/media-categories",
   "description": "WordPress plugin for assigning hierarchical categories to media items.",
-  "license": "GPL-2.0-or-later",
+  "license": "MIT",
   "type": "wordpress-plugin",
   "require-dev": {
     "phpunit/phpunit": "^9.6 || ^10.5",
