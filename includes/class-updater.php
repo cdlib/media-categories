@@ -25,21 +25,21 @@ class Updater {
 	 *
 	 * @var string
 	 */
-	const UPDATE_PACKAGE_HOST = 'satzman.com';
+	const UPDATE_PACKAGE_HOST = 'cdlib.org';
 
 	/**
 	 * Allowed update package path prefix.
 	 *
 	 * @var string
 	 */
-	const UPDATE_PACKAGE_PATH_PREFIX = '/plugin-updates/media-categories/';
+	const UPDATE_PACKAGE_PATH_PREFIX = '/services-groups/webprod/plugins/media-categories/';
 
 	/**
 	 * External update hostname.
 	 *
 	 * @var string
 	 */
-	const UPDATE_HOSTNAME = 'satzman.com';
+	const UPDATE_HOSTNAME = 'cdlib.org';
 
 	/**
 	 * Canonical repository URL shown in WordPress plugin UI.
@@ -81,7 +81,7 @@ class Updater {
 		}
 
 		return (object) array(
-			'id'           => 'https://satzman.com/plugin-updates/media-categories/',
+			'id'           => 'https://cdlib.org/services-groups/webprod/plugins/media-categories/',
 			'slug'         => 'media-categories',
 			'version'      => (string) $remote_info['version'],
 			'new_version'  => (string) $remote_info['version'],
