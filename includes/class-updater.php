@@ -173,7 +173,7 @@ class Updater {
 			'name'          => isset( $remote_info['name'] ) ? (string) $remote_info['name'] : 'Media Categories',
 			'slug'          => 'media-categories',
 			'version'       => (string) $remote_info['version'],
-			'author'        => '<a href="https://satzman.com/">Eric Satzman</a>',
+			'author'        => '<a href="mailto:esatzman@ucop.edu">Eric Satzman</a>',
 			'homepage'      => self::REPOSITORY_URL,
 			'requires'      => isset( $remote_info['requires'] ) ? (string) $remote_info['requires'] : '',
 			'tested'        => isset( $remote_info['tested'] ) ? (string) $remote_info['tested'] : '',
