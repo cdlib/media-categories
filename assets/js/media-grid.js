@@ -124,6 +124,7 @@
 					controller: browser.controller,
 					priority: -73,
 					style: 'secondary',
+					size: '',
 					className: 'media-categories-browse-button',
 					click: function() {
 						const isCollapsed = ! $( 'body' ).hasClass( 'media-categories-sidebar-collapsed' );

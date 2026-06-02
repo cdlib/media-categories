@@ -157,6 +157,7 @@ body.upload-php .media-frame-toolbar .media-toolbar-secondary select {
 
 body.upload-php .attachments-browser .media-toolbar-secondary .media-categories-browse-button,
 body.upload-php .media-frame-toolbar .media-toolbar-secondary .media-categories-browse-button {
+	margin: 0;
 	white-space: nowrap;
 }
 
