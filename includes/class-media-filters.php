@@ -47,7 +47,7 @@ class Media_Filters {
 
 		echo '<label class="screen-reader-text" for="filter-by-media-category">' . esc_html__( 'Filter by Media Categories', 'media-categories' ) . '</label>';
 		echo '<select id="filter-by-media-category" name="media_category_filter">';
-		echo '<option value="">' . esc_html__( 'Filter by Media Categories', 'media-categories' ) . '</option>';
+		echo '<option value="">' . esc_html__( 'All categories', 'media-categories' ) . '</option>';
 		echo '<option value="uncategorized" ' . selected( 'uncategorized', $selected, false ) . '>' . esc_html__( 'Uncategorized', 'media-categories' ) . '</option>';
 
 		foreach ( $options as $term ) {

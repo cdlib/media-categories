@@ -134,8 +134,9 @@ body.upload-php .media-frame-toolbar .media-toolbar-primary.search-form {
 	margin-left: auto;
 	margin-right: 20px;
 	display: block !important;
-	flex: 0 1 420px;
-	min-width: 300px;
+	flex: 1 1 340px;
+	max-width: 420px;
+	min-width: 240px;
 	position: relative;
 }
 
@@ -182,13 +183,28 @@ body.upload-php .media-frame-toolbar .media-toolbar-primary.search-form label {
 body.upload-php .attachments-browser .media-toolbar-primary.search-form input[type="search"],
 body.upload-php .media-frame-toolbar .media-toolbar-primary.search-form input[type="search"] {
 	width: 100%;
-	min-width: 160px;
+	min-width: 0;
 	box-sizing: border-box;
 	flex: 1 1 auto;
 }
 
-body.upload-php:not(.media-categories-sidebar-collapsed) .media-categories-grid-filter.attachment-filters {
-	display: none;
+body.upload-php:not(.media-categories-sidebar-collapsed) .attachments-browser .media-toolbar,
+body.upload-php:not(.media-categories-sidebar-collapsed) .media-frame-toolbar .media-toolbar {
+	flex-wrap: wrap;
+	align-items: flex-start;
+}
+
+body.upload-php:not(.media-categories-sidebar-collapsed) .attachments-browser .media-toolbar-secondary,
+body.upload-php:not(.media-categories-sidebar-collapsed) .media-frame-toolbar .media-toolbar-secondary {
+	flex-wrap: wrap;
+}
+
+body.upload-php:not(.media-categories-sidebar-collapsed) .attachments-browser .media-toolbar-primary.search-form,
+body.upload-php:not(.media-categories-sidebar-collapsed) .media-frame-toolbar .media-toolbar-primary.search-form {
+	flex: 1 1 100%;
+	max-width: none;
+	margin-left: 0;
+	margin-right: 0;
 }
 
 .media-categories-dialog-backdrop {

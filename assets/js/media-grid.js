@@ -11,6 +11,7 @@
 	let frameEventsBound = false;
 	let sidebarRefreshTimer = null;
 	const sidebarSessionKey = 'mediaCategoriesSidebarCollapsed';
+	let nativeGridFilterRegistered = false;
 
 	function getBrowser() {
 		if ( ! wp.media.frame || ! wp.media.frame.content ) {
@@ -20,39 +21,109 @@
 		return wp.media.frame.content.get();
 	}
 
-	function injectToolbarFilter() {
+	function buildNativeGridFilterView() {
+		if ( ! wp.media || ! wp.media.view || ! wp.media.view.AttachmentFilters ) {
+			return;
+		}
+
+		return wp.media.view.AttachmentFilters.extend( {
+			id: 'media-categories-attachment-filters',
+
+			createFilters: function() {
+				const filters = {
+					all: {
+						text: data.allLabel,
+						props: {
+							media_category_filter: null
+						},
+						priority: 10
+					}
+				};
+				const termOptions = Array.isArray( data.termOptions ) ? data.termOptions : [];
+
+				termOptions.forEach( function( term ) {
+					if ( ! term || ! term.value || ! term.label ) {
+						return;
+					}
+
+					filters[ String( term.value ) ] = {
+						text: String( term.label ),
+						props: {
+							media_category_filter: String( term.value )
+						},
+						priority: 20
+					};
+				} );
+
+				this.filters = filters;
+			},
+
+			initialize: function() {
+				wp.media.view.AttachmentFilters.prototype.initialize.apply( this, arguments );
+				this.$el.attr( 'aria-label', data.dropdownLabel );
+			}
+		} );
+	}
+
+	function ensureNativeGridFilter() {
 		const browser = getBrowser();
-		if ( ! browser || ! browser.toolbar ) {
+
+		if (
+			! browser ||
+			! browser.toolbar ||
+			! browser.collection ||
+			! browser.collection.props ||
+			! browser.controller ||
+			! browser.controller.isModeActive ||
+			! browser.controller.isModeActive( 'grid' ) ||
+			! wp.media ||
+			! wp.media.view ||
+			! wp.media.view.Label
+		) {
 			return;
 		}
 
-		const toolbar = browser.toolbar.$el;
-		const secondary = toolbar.find( '.media-toolbar-secondary' );
-
-		if ( ! toolbar.length || toolbar.find( '.media-categories-grid-filter' ).length ) {
+		if ( browser.toolbar.get( 'mediaCategoriesFilter' ) ) {
 			return;
 		}
 
-		const wrapper = $( '<label class="media-categories-grid-filter attachment-filters"></label>' );
-		const select = $( '<select aria-label="' + data.dropdownLabel + '"></select>' );
+		if ( ! nativeGridFilterRegistered ) {
+			wp.media.view.MediaCategoriesFilter = buildNativeGridFilterView();
+			nativeGridFilterRegistered = true;
+		}
 
-		select.append( $( '<option></option>' ).val( '' ).text( data.allLabel ) );
-		select.append( $( '<option></option>' ).val( 'uncategorized' ).text( data.uncategorized ) );
+		if ( ! wp.media.view.MediaCategoriesFilter ) {
+			return;
+		}
 
-		data.terms.forEach( function( term ) {
-			select.append( $( '<option></option>' ).val( String( term.id ) ).text( term.name ) );
-		} );
+		browser.toolbar.set(
+			'mediaCategoriesFilterLabel',
+			new wp.media.view.Label( {
+				value: data.dropdownLabel,
+				attributes: {
+					for: 'media-categories-attachment-filters'
+				},
+				priority: -74,
+				className: 'screen-reader-text'
+			} ).render()
+		);
 
-		select.val( data.selected );
-		select.on( 'change', function() {
-			updateLibraryFilter( $( this ).val() );
-		} );
+		browser.toolbar.set(
+			'mediaCategoriesFilter',
+			new wp.media.view.MediaCategoriesFilter( {
+				controller: browser.controller,
+				model: browser.collection.props,
+				priority: -74
+			} ).render()
+		);
 
-		wrapper.append( select );
-		if ( secondary.length ) {
-			secondary.append( wrapper );
-		} else {
-			toolbar.append( wrapper );
+		if ( data.selected ) {
+			browser.collection.props.set( 'media_category_filter', data.selected );
+			const filterView = browser.toolbar.get( 'mediaCategoriesFilter' );
+
+			if ( filterView && typeof filterView.select === 'function' ) {
+				filterView.select();
+			}
 		}
 	}
 
@@ -81,17 +152,27 @@
 
 	function updateLibraryFilter( selected ) {
 		const browser = getBrowser();
+		const nextSelected = selected || '';
 
-		if ( ! browser || ! browser.collection ) {
+		if ( browser && browser.collection ) {
+			browser.collection.props.set( 'media_category_filter', nextSelected );
+			browser.collection._requery( true );
+		} else {
+			const url = new URL( window.location.href );
+
+			if ( nextSelected ) {
+				url.searchParams.set( 'media_category_filter', nextSelected );
+			} else {
+				url.searchParams.delete( 'media_category_filter' );
+			}
+
+			window.location.href = url.toString();
 			return;
 		}
 
-		browser.collection.props.set( 'media_category_filter', selected || '' );
-		browser.collection._requery( true );
-
-		$( '.media-categories-grid-filter select' ).val( selected || '' );
+		$( '.media-categories-grid-filter select' ).val( nextSelected );
 		$( '.media-categories-folder' ).removeClass( 'is-current' );
-		$( '.media-categories-folder[data-media-category-filter="' + selected + '"]' ).addClass( 'is-current' );
+		$( '.media-categories-folder[data-media-category-filter="' + nextSelected + '"]' ).addClass( 'is-current' );
 	}
 
 	function applyInitialFilter() {
@@ -573,9 +654,10 @@
 		applyStoredSidebarState();
 
 		const interval = window.setInterval( function() {
+			normalizeToolbarSearch();
+
 			if ( getBrowser() ) {
-				injectToolbarFilter();
-				normalizeToolbarSearch();
+				ensureNativeGridFilter();
 				applyInitialFilter();
 				bindFrameEvents();
 			}

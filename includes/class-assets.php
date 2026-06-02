@@ -42,11 +42,13 @@ class Assets {
 			return;
 		}
 
+		$admin_css_version = $this->get_asset_version( MEDIA_CATEGORIES_DIR . 'assets/css/admin.css' );
+
 		wp_enqueue_style(
 			'media-categories-admin',
 			MEDIA_CATEGORIES_URL . 'assets/css/admin.css',
 			array(),
-			MEDIA_CATEGORIES_VERSION
+			$admin_css_version
 		);
 
 		if ( $is_media_screen ) {
@@ -57,12 +59,15 @@ class Assets {
 					'orderby'    => 'name',
 				)
 			);
+			$term_options = get_media_category_term_options( TAXONOMY );
+
+			$grid_js_version = $this->get_asset_version( MEDIA_CATEGORIES_DIR . 'assets/js/media-grid.js' );
 
 			wp_enqueue_script(
 				'media-categories-grid',
 				MEDIA_CATEGORIES_URL . 'assets/js/media-grid.js',
 				array( 'jquery', 'media-views' ),
-				MEDIA_CATEGORIES_VERSION,
+				$grid_js_version,
 				true
 			);
 
@@ -85,8 +90,9 @@ class Assets {
 					'selected'        => isset( $_GET['media_category_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['media_category_filter'] ) ) : '',
 					'dropdownLabel'   => __( 'Filter by Media Categories', 'media-categories' ),
 					'uncategorized'   => __( 'Uncategorized', 'media-categories' ),
-					'allLabel'        => __( 'All media categories', 'media-categories' ),
-				'libraryTitle'    => __( 'Media Categories', 'media-categories' ),
+					'allLabel'        => __( 'All categories', 'media-categories' ),
+					'termOptions'     => array_values( $term_options ),
+					'libraryTitle'    => __( 'Media Categories', 'media-categories' ),
 					'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
 					'nonce'           => wp_create_nonce( 'media_categories_manage_terms' ),
 					'canManage'       => current_user_can( MANAGE_CAP ),
@@ -114,13 +120,31 @@ class Assets {
 		}
 
 		if ( $is_taxonomy_screen ) {
+			$taxonomy_js_version = $this->get_asset_version( MEDIA_CATEGORIES_DIR . 'assets/js/taxonomy-admin.js' );
+
 			wp_enqueue_script(
 				'media-categories-taxonomy',
 				MEDIA_CATEGORIES_URL . 'assets/js/taxonomy-admin.js',
 				array( 'jquery' ),
-				MEDIA_CATEGORIES_VERSION,
+				$taxonomy_js_version,
 				true
 			);
 		}
+	}
+
+	/**
+	 * Get an asset version that changes when the file changes.
+	 *
+	 * @param string $path Absolute asset path.
+	 * @return string
+	 */
+	private function get_asset_version( $path ) {
+		$mtime = file_exists( $path ) ? (string) filemtime( $path ) : '';
+
+		if ( '' === $mtime ) {
+			return MEDIA_CATEGORIES_VERSION;
+		}
+
+		return MEDIA_CATEGORIES_VERSION . '.' . $mtime;
 	}
 }
