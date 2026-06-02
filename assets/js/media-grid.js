@@ -12,6 +12,7 @@
 	let sidebarRefreshTimer = null;
 	const sidebarSessionKey = 'mediaCategoriesSidebarCollapsed';
 	let nativeGridFilterRegistered = false;
+	let sidebarToggleButtonView = null;
 
 	function getBrowser() {
 		if ( ! wp.media.frame || ! wp.media.frame.content ) {
@@ -83,10 +84,6 @@
 			return;
 		}
 
-		if ( browser.toolbar.get( 'mediaCategoriesFilter' ) ) {
-			return;
-		}
-
 		if ( ! nativeGridFilterRegistered ) {
 			wp.media.view.MediaCategoriesFilter = buildNativeGridFilterView();
 			nativeGridFilterRegistered = true;
@@ -96,26 +93,47 @@
 			return;
 		}
 
-		browser.toolbar.set(
-			'mediaCategoriesFilterLabel',
-			new wp.media.view.Label( {
-				value: data.dropdownLabel,
-				attributes: {
-					for: 'media-categories-attachment-filters'
-				},
-				priority: -74,
-				className: 'screen-reader-text'
-			} ).render()
-		);
+		if ( ! browser.toolbar.get( 'mediaCategoriesFilter' ) ) {
+			browser.toolbar.set(
+				'mediaCategoriesFilterLabel',
+				new wp.media.view.Label( {
+					value: data.dropdownLabel,
+					attributes: {
+						for: 'media-categories-attachment-filters'
+					},
+					priority: -74,
+					className: 'screen-reader-text'
+				} ).render()
+			);
 
-		browser.toolbar.set(
-			'mediaCategoriesFilter',
-			new wp.media.view.MediaCategoriesFilter( {
-				controller: browser.controller,
-				model: browser.collection.props,
-				priority: -74
-			} ).render()
-		);
+			browser.toolbar.set(
+				'mediaCategoriesFilter',
+				new wp.media.view.MediaCategoriesFilter( {
+					controller: browser.controller,
+					model: browser.collection.props,
+					priority: -74
+				} ).render()
+			);
+		}
+
+		if ( ! browser.toolbar.get( 'mediaCategoriesBrowseButton' ) ) {
+			browser.toolbar.set(
+				'mediaCategoriesBrowseButton',
+				new wp.media.view.Button( {
+					text: data.strings.browseButton,
+					controller: browser.controller,
+					priority: -73,
+					style: 'secondary',
+					className: 'media-categories-browse-button',
+					click: function() {
+						const isCollapsed = ! $( 'body' ).hasClass( 'media-categories-sidebar-collapsed' );
+						setSidebarCollapsedState( isCollapsed, true );
+					}
+				} ).render()
+			);
+		}
+
+		sidebarToggleButtonView = browser.toolbar.get( 'mediaCategoriesBrowseButton' ) || null;
 
 		if ( data.selected ) {
 			browser.collection.props.set( 'media_category_filter', data.selected );
@@ -125,6 +143,8 @@
 				filterView.select();
 			}
 		}
+
+		updateSidebarToggleButton();
 	}
 
 	function normalizeToolbarSearch() {
@@ -277,6 +297,20 @@
 		$( '.media-categories-toolbar__rename, .media-categories-toolbar__delete' ).prop( 'disabled', disabled );
 	}
 
+	function updateSidebarToggleButton() {
+		const isCollapsed = $( 'body' ).hasClass( 'media-categories-sidebar-collapsed' );
+		const buttonText = isCollapsed ? data.strings.browseButton : data.strings.closePanelButton;
+
+		if ( sidebarToggleButtonView && sidebarToggleButtonView.model ) {
+			sidebarToggleButtonView.model.set( {
+				text: buttonText,
+				tooltip: buttonText
+			} );
+		}
+
+		$( '.media-categories-browse-button' ).text( buttonText ).attr( 'aria-label', buttonText );
+	}
+
 	function performFolderAction( action, payload ) {
 		return $.post( data.ajaxUrl, $.extend( {
 			action: action,
@@ -302,28 +336,20 @@
 
 	function setSidebarCollapsedState( isCollapsed, persist ) {
 		const $body = $( 'body' );
-		const $toggle = $( '.media-categories-sidebar__toggle' );
-		const $icon = $toggle.find( '.dashicons' );
 
 		$body.toggleClass( 'media-categories-sidebar-collapsed', isCollapsed );
-
-		$toggle
-			.attr( 'aria-expanded', isCollapsed ? 'false' : 'true' )
-			.attr( 'aria-label', isCollapsed ? data.strings.expandLabel : data.strings.collapseLabel );
-
-		$icon.toggleClass( 'dashicons-arrow-left-alt2', ! isCollapsed );
-		$icon.toggleClass( 'dashicons-arrow-right-alt2', isCollapsed );
 
 		if ( false !== persist ) {
 			window.sessionStorage.setItem( sidebarSessionKey, isCollapsed ? '1' : '0' );
 		}
 
+		updateSidebarToggleButton();
 		updateToolbarState();
 	}
 
 	function applyStoredSidebarState() {
 		const storedValue = window.sessionStorage.getItem( sidebarSessionKey );
-		const isCollapsed = '1' === storedValue;
+		const isCollapsed = null === storedValue ? true : '1' === storedValue;
 
 		setSidebarCollapsedState( isCollapsed, false );
 	}
@@ -616,10 +642,6 @@
 			} );
 		} );
 
-		$( document ).on( 'click', '.media-categories-sidebar__toggle', function() {
-			const isCollapsed = ! $( 'body' ).hasClass( 'media-categories-sidebar-collapsed' );
-			setSidebarCollapsedState( isCollapsed, true );
-		} );
 	}
 
 	function bindFrameEvents() {

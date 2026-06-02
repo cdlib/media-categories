@@ -24,24 +24,6 @@
 	transition: transform 220ms ease, opacity 140ms ease;
 }
 
-.media-categories-sidebar__toggle {
-	position: absolute;
-	top: 112px;
-	right: -16px;
-	z-index: 2;
-	width: 32px;
-	height: 32px;
-	border: 1px solid #dcdcde;
-	border-radius: 999px;
-	background: #fff;
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	cursor: pointer;
-	transition: right 220ms ease, transform 220ms ease, box-shadow 220ms ease;
-}
-
 .media-categories-toolbar {
 	display: grid;
 	gap: 12px;
@@ -132,11 +114,11 @@ body.upload-php .media-frame-toolbar .media-toolbar-secondary {
 body.upload-php .attachments-browser .media-toolbar-primary.search-form,
 body.upload-php .media-frame-toolbar .media-toolbar-primary.search-form {
 	margin-left: auto;
-	margin-right: 20px;
+	margin-right: 0;
 	display: block !important;
-	flex: 1 1 340px;
-	max-width: 420px;
-	min-width: 240px;
+	flex: 0 1 260px;
+	max-width: 320px;
+	min-width: 180px;
 	position: relative;
 }
 
@@ -148,8 +130,8 @@ body.upload-php .media-frame-toolbar .media-toolbar-primary.search-form {
 }
 
 .media-categories-grid-filter select {
-	min-width: 180px;
-	max-width: 180px;
+	min-width: 170px;
+	max-width: 170px;
 	margin: 0;
 	vertical-align: middle;
 }
@@ -171,6 +153,11 @@ body.upload-php .media-frame-toolbar .media-toolbar-secondary > .spinner {
 body.upload-php .attachments-browser .media-toolbar-secondary select,
 body.upload-php .media-frame-toolbar .media-toolbar-secondary select {
 	max-width: 170px;
+}
+
+body.upload-php .attachments-browser .media-toolbar-secondary .media-categories-browse-button,
+body.upload-php .media-frame-toolbar .media-toolbar-secondary .media-categories-browse-button {
+	white-space: nowrap;
 }
 
 body.upload-php .attachments-browser .media-toolbar-primary.search-form .media-search-input-label,
@@ -196,15 +183,18 @@ body.upload-php:not(.media-categories-sidebar-collapsed) .media-frame-toolbar .m
 
 body.upload-php:not(.media-categories-sidebar-collapsed) .attachments-browser .media-toolbar-secondary,
 body.upload-php:not(.media-categories-sidebar-collapsed) .media-frame-toolbar .media-toolbar-secondary {
-	flex-wrap: wrap;
+	flex: 1 1 100%;
+	flex-wrap: nowrap;
 }
 
 body.upload-php:not(.media-categories-sidebar-collapsed) .attachments-browser .media-toolbar-primary.search-form,
 body.upload-php:not(.media-categories-sidebar-collapsed) .media-frame-toolbar .media-toolbar-primary.search-form {
 	flex: 1 1 100%;
 	max-width: none;
-	margin-left: 0;
-	margin-right: 0;
+	min-width: 0;
+	width: 100%;
+	margin: 0;
+	order: 2;
 }
 
 .media-categories-dialog-backdrop {
@@ -413,12 +403,6 @@ body.media-categories-sidebar-collapsed .media-categories-sidebar__inner {
 	pointer-events: none;
 }
 
-body.media-categories-sidebar-collapsed .media-categories-sidebar__toggle {
-	right: -16px;
-	transform: translateX(0);
-	pointer-events: auto;
-}
-
 body.upload-php.mode-grid.media-categories-sidebar-collapsed .media-frame {
 	margin-left: 0;
 }
@@ -503,13 +487,6 @@ body.upload-php.mode-grid.media-categories-sidebar-collapsed .media-frame {
 		padding: 14px;
 	}
 
-	.media-categories-sidebar__toggle {
-		top: 18px;
-		right: 14px;
-		width: 36px;
-		height: 36px;
-	}
-
 	.media-categories-toolbar__actions {
 		grid-template-columns: 1fr;
 	}
@@ -550,15 +527,6 @@ body.upload-php.mode-grid.media-categories-sidebar-collapsed .media-frame {
 }
 
 @media screen and (max-width: 600px) {
-	.media-categories-sidebar__toggle {
-		top: 14px;
-		right: 12px;
-	}
-
-	.media-categories-sidebar__inner {
-		padding-top: 56px;
-	}
-
 	.media-categories-search__input {
 		font-size: 16px;
 	}

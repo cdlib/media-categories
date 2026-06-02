@@ -48,9 +48,6 @@ class Folder_Sidebar {
 		?>
 		<div class="media-categories-layout">
 			<aside class="media-categories-sidebar" aria-label="<?php esc_attr_e( 'Media category folders', 'media-categories' ); ?>">
-				<button type="button" class="media-categories-sidebar__toggle" aria-expanded="true" aria-label="<?php esc_attr_e( 'Collapse media categories panel', 'media-categories' ); ?>">
-					<span class="dashicons dashicons-arrow-left-alt2" aria-hidden="true"></span>
-				</button>
 				<div class="media-categories-sidebar__inner">
 					<div class="media-categories-toolbar">
 						<button type="button" class="button button-primary media-categories-toolbar__new" <?php disabled( $can_manage, false ); ?>>
