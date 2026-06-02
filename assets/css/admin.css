@@ -61,6 +61,13 @@
 	white-space: nowrap;
 }
 
+.wp-core-ui .media-categories-toolbar__action {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 1.2;
+}
+
 .media-categories-search {
 	position: relative;
 	margin-bottom: 16px;
