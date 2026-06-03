@@ -132,7 +132,7 @@ final class Plugin {
 		}
 
 		foreach ( $plugin_meta as $index => $link ) {
-			if ( false !== strpos( $link, 'href="https://github.com/esatzman/media-categories"' ) ) {
+			if ( false !== strpos( $link, 'href="https://github.com/cdlib/media-categories"' ) ) {
 				$plugin_meta[ $index ] = preg_replace(
 					'#>[^<]+<#',
 					'>' . esc_html__( 'View Details', 'media-categories' ) . '<',

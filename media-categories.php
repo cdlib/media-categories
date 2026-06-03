@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Media Categories
- * Plugin URI:  https://github.com/esatzman/media-categories
+ * Plugin URI:  https://github.com/cdlib/media-categories
  * Description: Adds hierarchical media categories, media-library filtering, and virtual folders for attachments.
  * Version:     1.0.5
  * Author:      Eric Satzman
