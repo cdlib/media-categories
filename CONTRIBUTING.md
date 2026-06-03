@@ -11,10 +11,9 @@ Thanks for your interest in contributing to Media Categories.
 
 ## Development Notes
 
-- WordPress install path used for local development:
-  `/Users/local-esatzman/Desktop/Sites/media-categories/app/public`
-- Plugin path:
-  `/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories`
+- Place the plugin in a local WordPress installation under:
+  `wp-content/plugins/media-categories`
+- Activate `Media Categories` from the WordPress admin before testing admin UI changes.
 
 ## Quality Expectations
 
