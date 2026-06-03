@@ -27,9 +27,24 @@ class Folder_Sidebar {
 	 */
 	public function register() {
 		add_action( 'admin_notices', array( $this, 'render_sidebar' ) );
+		add_filter( 'admin_body_class', array( $this, 'add_collapsed_body_class' ) );
 		add_action( 'wp_ajax_media_categories_create_term', array( $this, 'ajax_create_term' ) );
 		add_action( 'wp_ajax_media_categories_rename_term', array( $this, 'ajax_rename_term' ) );
 		add_action( 'wp_ajax_media_categories_delete_term', array( $this, 'ajax_delete_term' ) );
+	}
+
+	/**
+	 * Start the media library with the folder sidebar hidden before JavaScript runs.
+	 *
+	 * @param string $classes Admin body classes.
+	 * @return string
+	 */
+	public function add_collapsed_body_class( $classes ) {
+		if ( is_media_library_screen() ) {
+			$classes .= ' media-categories-sidebar-collapsed';
+		}
+
+		return $classes;
 	}
 
 	/**

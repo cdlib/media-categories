@@ -124,7 +124,7 @@ class Assets {
 						'folderDeleted'     => __( 'Folder deleted.', 'media-categories' ),
 						'collapseLabel'     => __( 'Collapse media categories panel', 'media-categories' ),
 						'expandLabel'       => __( 'Expand media categories panel', 'media-categories' ),
-						'browseButton'      => __( 'Side Panel', 'media-categories' ),
+						'browseButton'      => __( 'Open side panel', 'media-categories' ),
 						'closePanelButton'  => __( 'Close side panel', 'media-categories' ),
 						'sortAscending'     => __( 'Folders sorted A to Z.', 'media-categories' ),
 						'sortDescending'    => __( 'Folders sorted Z to A.', 'media-categories' ),
