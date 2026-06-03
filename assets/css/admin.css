@@ -364,33 +364,87 @@ body.upload-php.mode-grid .media-frame {
 	transition: margin-left 220ms ease;
 }
 
-.media-categories-modal-field {
-	max-height: 180px;
+.media-categories-dropdown {
+	position: relative;
+	width: 100%;
+	margin-bottom: 200px;
+}
+
+.media-categories-dropdown.is-open {
+	margin-bottom: 0;
+}
+
+.media-categories-dropdown__button {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	min-height: 40px;
+	text-align: left;
+}
+
+.media-categories-dropdown__button:focus {
+	border-color: #2563eb;
+	box-shadow: 0 0 0 1px #2563eb;
+}
+
+.media-categories-dropdown__menu {
+	position: static;
+	max-height: 240px;
 	overflow: auto;
-	padding: 4px 0;
+	margin-top: 4px;
+	padding: 6px;
+	border: 1px solid #8c8f94;
+	border-radius: 3px;
+	background: #fff;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
-.media-categories-modal-field label {
-	display: block;
-	margin-bottom: 6px;
+.compat-item:has(.media-categories-dropdown),
+.compat-field-media_categories_terms,
+.compat-field-media_categories_terms > .field,
+.compat-field-media_categories_terms .media-categories-modal-field,
+.compat-field-media_categories_terms fieldset {
+	overflow: visible;
 }
 
-.media-categories-modal-tree,
-.media-categories-modal-tree ul {
-	list-style: none;
+.media-categories-dropdown__option {
+	display: flex;
+	align-items: center;
+	gap: 8px;
 	margin: 0;
-	padding: 0;
+	padding: 7px 8px 7px calc(8px + (var(--media-categories-depth, 0) * 18px));
+	border-radius: 3px;
+	color: #1d2327;
+	line-height: 1.3;
 }
 
-.media-categories-modal-tree ul {
-	margin-left: 18px;
-	margin-top: 4px;
-	padding-left: 12px;
-	border-left: 1px solid #dcdcde;
+.media-categories-dropdown__option:hover {
+	background: #eef6ff;
 }
 
-.media-categories-modal-tree__item + .media-categories-modal-tree__item {
-	margin-top: 4px;
+.compat-field-media_categories_terms > .label,
+.compat-field-media_categories_terms > .label label,
+.compat-field-media_categories_terms > .label .alignleft {
+	float: none;
+	text-align: left;
+	font-weight: 400;
+	font-size: 16px;
+}
+
+.compat-field-media_categories_terms > .label {
+	margin-left: 35%;
+	width: 65%;
+}
+
+.compat-field-media_categories_terms > .label .alignleft {
+	display: block;
+	width: 100%;
+}
+
+.compat-field-media_categories_terms > .field,
+.compat-field-media_categories_terms .media-categories-modal-field {
+	text-align: left;
 }
 
 body.media-categories-sidebar-collapsed .media-categories-layout {

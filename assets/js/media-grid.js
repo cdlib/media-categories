@@ -211,46 +211,6 @@
 		}
 	}
 
-	function syncModalCategoryFields() {
-		$( '.media-categories-modal-checkbox' ).each( function() {
-			const checkbox = $( this );
-
-			if ( checkbox.data( 'media-categories-bound' ) ) {
-				return;
-			}
-
-			checkbox.data( 'media-categories-bound', true );
-
-			checkbox.on( 'change.mediaCategories', function() {
-				if ( checkbox.is( ':checked' ) ) {
-					let parentId = String( checkbox.data( 'parent-term-id' ) || '' );
-
-					while ( parentId && parentId !== '0' ) {
-						const parentCheckbox = $( '.media-categories-modal-checkbox[value="' + parentId + '"]' ).first();
-
-						if ( ! parentCheckbox.length ) {
-							break;
-						}
-
-						parentCheckbox.prop( 'checked', true );
-						parentId = String( parentCheckbox.data( 'parent-term-id' ) || '' );
-					}
-				}
-
-				const container = checkbox.closest( '.media-categories-modal-field' );
-				const hiddenInput = container.find( '.media-categories-modal-input' );
-				const values = container
-					.find( '.media-categories-modal-checkbox:checked' )
-					.map( function() {
-						return $( this ).val();
-					} )
-					.get();
-
-				hiddenInput.val( values.join( ',' ) );
-			} );
-		} );
-	}
-
 	function bindSidebarClicks() {
 		$( document ).on( 'click', '.media-categories-folder', function( event ) {
 			if ( ! $( 'body' ).hasClass( 'mode-grid' ) ) {
@@ -673,7 +633,6 @@
 
 		bindSidebarClicks();
 		bindFolderControls();
-		syncModalCategoryFields();
 		applyStoredSidebarState();
 
 		const interval = window.setInterval( function() {
@@ -685,7 +644,6 @@
 				bindFrameEvents();
 			}
 
-			syncModalCategoryFields();
 			updateToolbarState();
 		}, 300 );
 	} );

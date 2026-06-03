@@ -51,6 +51,18 @@ class Assets {
 			$admin_css_version
 		);
 
+		if ( $is_media_screen || $is_attachment_screen ) {
+			$attachment_categories_js_version = $this->get_asset_version( MEDIA_CATEGORIES_DIR . 'assets/js/attachment-categories.js' );
+
+			wp_enqueue_script(
+				'media-categories-attachment-categories',
+				MEDIA_CATEGORIES_URL . 'assets/js/attachment-categories.js',
+				array( 'jquery' ),
+				$attachment_categories_js_version,
+				true
+			);
+		}
+
 		if ( $is_media_screen ) {
 			$terms = get_terms(
 				array(

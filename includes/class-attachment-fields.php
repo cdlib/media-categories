@@ -53,16 +53,7 @@ class Attachment_Fields {
 
 		wp_nonce_field( 'media_categories_attachment_terms', 'media_categories_attachment_terms_nonce' );
 
-		echo '<div class="media-categories-checklist">';
-		wp_terms_checklist(
-			$post->ID,
-			array(
-				'taxonomy'      => TAXONOMY,
-				'selected_cats' => $selected_ids,
-				'checked_ontop' => false,
-			)
-		);
-		echo '</div>';
+		echo $this->render_term_dropdown( $selected_ids, 'tax_input[' . TAXONOMY . '][]', 'media-categories-attachment-' . (int) $post->ID );
 	}
 
 	/**
@@ -102,12 +93,7 @@ class Attachment_Fields {
 		$selected_ids = wp_get_object_terms( $post->ID, TAXONOMY, array( 'fields' => 'ids' ) );
 		$selected_ids = $this->expand_with_ancestor_terms( $selected_ids );
 		$html = '<div class="media-categories-modal-field"><fieldset><legend class="screen-reader-text">' . esc_html__( 'Media Categories', 'media-categories' ) . '</legend>';
-		$html .= sprintf(
-			'<input type="hidden" class="media-categories-modal-input" name="attachments[%1$d][media_categories_terms]" value="%2$s" />',
-			(int) $post->ID,
-			esc_attr( implode( ',', array_map( 'intval', $selected_ids ) ) )
-		);
-		$html .= $this->render_modal_term_checklist( $selected_ids );
+		$html .= $this->render_term_dropdown( $selected_ids, 'attachments[' . (int) $post->ID . '][media_categories_terms][]', 'media-categories-modal-' . (int) $post->ID );
 		$html                     .= '</fieldset></div>';
 		$form_fields['media_categories_terms'] = array(
 			'label' => __( 'Media Categories', 'media-categories' ),
@@ -155,35 +141,64 @@ class Attachment_Fields {
 	}
 
 	/**
-	 * Render hierarchical checklist markup for the media modal.
+	 * Render dropdown markup for term selection.
 	 *
 	 * @param int[] $selected_ids Selected term IDs.
+	 * @param string $input_name Input name for saved term IDs.
+	 * @param string $control_id Unique control ID.
 	 * @return string
 	 */
-	private function render_modal_term_checklist( $selected_ids ) {
+	private function render_term_dropdown( $selected_ids, $input_name, $control_id ) {
 		$tree = $this->get_term_tree();
 
 		if ( empty( $tree ) ) {
 			return '<p class="description">' . esc_html__( 'No media categories available yet.', 'media-categories' ) . '</p>';
 		}
 
-		return '<ul class="media-categories-modal-tree">' . $this->render_modal_term_nodes( $tree, $selected_ids ) . '</ul>';
+		$button_text    = __( 'Select media categories', 'media-categories' );
+		$html           = sprintf(
+			'<div class="media-categories-dropdown" data-input-name="%1$s" data-placeholder="%2$s">',
+			esc_attr( $input_name ),
+			esc_attr( $button_text )
+		);
+		$html          .= '<div class="media-categories-dropdown__values">';
+
+		foreach ( $selected_ids as $selected_id ) {
+			$html .= sprintf(
+				'<input type="hidden" name="%1$s" value="%2$d" />',
+				esc_attr( $input_name ),
+				(int) $selected_id
+			);
+		}
+
+		$html .= '</div>';
+		$html .= sprintf(
+			'<button type="button" id="%1$s" class="button media-categories-dropdown__button" aria-expanded="false">%2$s</button>',
+			esc_attr( $control_id ),
+			esc_html( $button_text )
+		);
+		$html .= '<div class="media-categories-dropdown__menu" hidden>';
+		$html .= $this->render_term_dropdown_nodes( $tree, $selected_ids );
+		$html .= '</div></div>';
+
+		return $html;
 	}
 
 	/**
-	 * Render checklist items recursively.
+	 * Render dropdown menu items recursively.
 	 *
 	 * @param array[] $nodes Term tree nodes.
 	 * @param int[]   $selected_ids Selected term IDs.
+	 * @param int     $depth Tree depth.
 	 * @return string
 	 */
-	private function render_modal_term_nodes( $nodes, $selected_ids ) {
+	private function render_term_dropdown_nodes( $nodes, $selected_ids, $depth = 0 ) {
 		$html = '';
 
 		foreach ( $nodes as $node ) {
-			$html .= '<li class="media-categories-modal-tree__item">';
 			$html .= sprintf(
-				'<label><input type="checkbox" class="media-categories-modal-checkbox" value="%1$d" data-parent-term-id="%2$d" %3$s /> %4$s</label>',
+				'<label class="media-categories-dropdown__option" data-depth="%1$d" style="--media-categories-depth:%1$d"><input type="checkbox" value="%2$d" data-parent-term-id="%3$d" %4$s /> <span>%5$s</span></label>',
+				(int) $depth,
 				(int) $node['term_id'],
 				(int) $node['parent'],
 				checked( in_array( (int) $node['term_id'], $selected_ids, true ), true, false ),
@@ -191,12 +206,8 @@ class Attachment_Fields {
 			);
 
 			if ( ! empty( $node['children'] ) ) {
-				$html .= '<ul class="media-categories-modal-tree">';
-				$html .= $this->render_modal_term_nodes( $node['children'], $selected_ids );
-				$html .= '</ul>';
+				$html .= $this->render_term_dropdown_nodes( $node['children'], $selected_ids, $depth + 1 );
 			}
-
-			$html .= '</li>';
 		}
 
 		return $html;
