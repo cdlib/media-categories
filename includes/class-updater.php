@@ -46,7 +46,7 @@ class Updater {
 	 *
 	 * @var string
 	 */
-	const REPOSITORY_URL = 'https://github.com/ericsatzman/media-categories';
+	const REPOSITORY_URL = 'https://github.com/esatzman/media-categories';
 
 	/**
 	 * Register hooks.
