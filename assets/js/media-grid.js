@@ -15,11 +15,19 @@
 	let sidebarToggleButtonView = null;
 
 	function getBrowser() {
-		if ( ! wp.media.frame || ! wp.media.frame.content ) {
-			return null;
+		if ( wp.media.frame && wp.media.frame.content ) {
+			const browser = wp.media.frame.content.get();
+
+			if ( browser ) {
+				return browser;
+			}
 		}
 
-		return wp.media.frame.content.get();
+		if ( wp.media.frames && wp.media.frames.browse && wp.media.frames.browse.browserView ) {
+			return wp.media.frames.browse.browserView;
+		}
+
+		return null;
 	}
 
 	function buildNativeGridFilterView() {
@@ -179,21 +187,15 @@
 			browser.collection.props.set( 'media_category_filter', nextSelected );
 			browser.collection._requery( true );
 		} else {
-			const url = new URL( window.location.href );
-
-			if ( nextSelected ) {
-				url.searchParams.set( 'media_category_filter', nextSelected );
-			} else {
-				url.searchParams.delete( 'media_category_filter' );
-			}
-
-			window.location.href = url.toString();
-			return;
+			return false;
 		}
 
 		$( '.media-categories-grid-filter select' ).val( nextSelected );
 		$( '.media-categories-folder' ).removeClass( 'is-current' );
 		$( '.media-categories-folder[data-media-category-filter="' + nextSelected + '"]' ).addClass( 'is-current' );
+		updateToolbarState();
+
+		return true;
 	}
 
 	function applyInitialFilter() {
@@ -213,12 +215,21 @@
 
 	function bindSidebarClicks() {
 		$( document ).on( 'click', '.media-categories-folder', function( event ) {
-			if ( ! $( 'body' ).hasClass( 'mode-grid' ) ) {
+			if ( ! $( 'body' ).hasClass( 'mode-grid' ) && ! getBrowser() ) {
 				return;
 			}
 
 			event.preventDefault();
-			updateLibraryFilter( $( this ).data( 'media-category-filter' ) );
+
+			const selected = $( this ).data( 'media-category-filter' );
+
+			if ( updateLibraryFilter( selected ) ) {
+				return;
+			}
+
+			window.setTimeout( function() {
+				updateLibraryFilter( selected );
+			}, 100 );
 		} );
 	}
 
