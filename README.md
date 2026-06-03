@@ -69,6 +69,12 @@ composer lint
 composer test
 ```
 
+## Release Tooling
+
+Release packaging and updater deployment tooling are intentionally kept outside
+this plugin repository. The plugin repo is suitable for public distribution;
+private build and hosted-updater files are managed separately.
+
 ## Contributing
 
 Contributions are welcome. Please read [CONTRIBUTING.md](/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories/CONTRIBUTING.md) before opening a pull request.
