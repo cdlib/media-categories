@@ -179,6 +179,23 @@
 		} );
 	}
 
+	function placeSidebar() {
+		const sidebar = $( '.media-categories-layout' ).first();
+		const wrap = $( 'body.upload-php .wrap' ).first();
+
+		if ( ! sidebar.length || ! wrap.length || sidebar.parent().is( wrap ) ) {
+			return;
+		}
+
+		const mediaFrame = wrap.find( '.media-frame' ).first();
+
+		if ( mediaFrame.length ) {
+			sidebar.insertBefore( mediaFrame );
+		} else {
+			wrap.append( sidebar );
+		}
+	}
+
 	function updateLibraryFilter( selected ) {
 		const browser = getBrowser();
 		const nextSelected = selected || '';
@@ -642,11 +659,13 @@
 			return;
 		}
 
+		placeSidebar();
 		bindSidebarClicks();
 		bindFolderControls();
 		applyStoredSidebarState();
 
 		const interval = window.setInterval( function() {
+			placeSidebar();
 			normalizeToolbarSearch();
 
 			if ( getBrowser() ) {

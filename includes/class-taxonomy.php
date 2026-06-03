@@ -21,6 +21,8 @@ class Taxonomy {
 	public function register() {
 		add_action( 'init', array( $this, 'register_taxonomy' ) );
 		add_filter( 'parent_file', array( $this, 'highlight_media_menu' ) );
+		add_filter( 'manage_edit-' . TAXONOMY . '_columns', array( $this, 'filter_term_columns' ) );
+		add_filter( 'manage_' . TAXONOMY . '_custom_column', array( $this, 'render_term_column' ), 10, 3 );
 	}
 
 	/**
@@ -87,5 +89,86 @@ class Taxonomy {
 		}
 
 		return $parent_file;
+	}
+
+	/**
+	 * Replace the native stored-count column with a live attachment count.
+	 *
+	 * @param array<string,string> $columns Term list table columns.
+	 * @return array<string,string>
+	 */
+	public function filter_term_columns( $columns ) {
+		if ( isset( $columns['posts'] ) ) {
+			$columns['media_category_attachments'] = $columns['posts'];
+			unset( $columns['posts'] );
+		}
+
+		return $columns;
+	}
+
+	/**
+	 * Render custom taxonomy columns.
+	 *
+	 * @param string $content Existing column content.
+	 * @param string $column_name Column name.
+	 * @param int    $term_id Term ID.
+	 * @return string
+	 */
+	public function render_term_column( $content, $column_name, $term_id ) {
+		if ( 'media_category_attachments' !== $column_name ) {
+			return $content;
+		}
+
+		$count = $this->get_visible_attachment_count( (int) $term_id );
+		$url   = add_query_arg(
+			array(
+				'post_type'             => 'attachment',
+				'media_category_filter' => (int) $term_id,
+			),
+			admin_url( 'upload.php' )
+		);
+
+		return sprintf(
+			'<a href="%1$s">%2$s</a>',
+			esc_url( $url ),
+			esc_html( number_format_i18n( $count ) )
+		);
+	}
+
+	/**
+	 * Count attachments matching a term filter, including descendants.
+	 *
+	 * @param int $term_id Term ID.
+	 * @return int
+	 */
+	private function get_visible_attachment_count( $term_id ) {
+		$term_ids = array( $term_id );
+		$children = get_term_children( $term_id, TAXONOMY );
+
+		if ( ! is_wp_error( $children ) ) {
+			$term_ids = array_merge( $term_ids, array_map( 'intval', $children ) );
+		}
+
+		$query = new \WP_Query(
+			array(
+				'post_type'              => 'attachment',
+				'post_status'            => 'inherit',
+				'posts_per_page'         => 1,
+				'fields'                 => 'ids',
+				'no_found_rows'          => false,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+				'tax_query'              => array(
+					array(
+						'taxonomy'         => TAXONOMY,
+						'field'            => 'term_id',
+						'terms'            => array_values( array_unique( $term_ids ) ),
+						'include_children' => false,
+					),
+				),
+			)
+		);
+
+		return (int) $query->found_posts;
 	}
 }

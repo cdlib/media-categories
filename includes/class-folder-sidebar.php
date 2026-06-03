@@ -26,7 +26,7 @@ class Folder_Sidebar {
 	 * @return void
 	 */
 	public function register() {
-		add_action( 'admin_notices', array( $this, 'render_sidebar' ) );
+		add_action( 'admin_footer-upload.php', array( $this, 'render_sidebar' ) );
 		add_filter( 'admin_body_class', array( $this, 'add_collapsed_body_class' ) );
 		add_action( 'wp_ajax_media_categories_create_term', array( $this, 'ajax_create_term' ) );
 		add_action( 'wp_ajax_media_categories_rename_term', array( $this, 'ajax_rename_term' ) );
@@ -61,7 +61,7 @@ class Folder_Sidebar {
 		$tree    = $this->get_term_tree();
 		$can_manage = current_user_can( MANAGE_CAP );
 		?>
-		<div class="media-categories-layout">
+		<div class="media-categories-layout" data-media-categories-sidebar-root="true">
 			<aside class="media-categories-sidebar" aria-label="<?php esc_attr_e( 'Media category folders', 'media-categories' ); ?>">
 				<div class="media-categories-sidebar__inner">
 					<div class="media-categories-toolbar">
