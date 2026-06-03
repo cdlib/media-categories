@@ -24,14 +24,13 @@ This project is open source under the MIT License. See [LICENSE](/Users/local-es
 
 - Native taxonomy management under `Media > Media Categories`
 - Settings page under `Settings > Media Categories`
-- Role-based control over who can manage media categories
 - Multi-category assignment for attachments
 - Automatic ancestor selection when a child category is assigned
 - Category filtering in Media Library list view
 - Virtual folder sidebar in Media Library grid view
-- Built-in `All Files` and `Uncategorized` virtual folders
 - Create, rename, and delete folder actions from the grid sidebar
-
+- Role-based permissions for managing media categories
+  
 ## Contributing
 
 Contributions are welcome. Please read [CONTRIBUTING.md](/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories/CONTRIBUTING.md) before opening a pull request.
@@ -43,21 +42,6 @@ If you discover a security issue, please follow the reporting guidance in [SECUR
 ## Code of Conduct
 
 Participation in this project is governed by [CODE_OF_CONDUCT.md](/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories/CODE_OF_CONDUCT.md).
-
-## Current Behavior Notes
-
-- Parent category filters include descendant attachments.
-- Sidebar counts are based on the same visible query logic as the grid filter.
-- The grid sidebar defaults to open and persists collapse state for the current
-  browser session only.
-- The top toolbar category dropdown is hidden while the sidebar is open and
-  shown when the sidebar is collapsed.
-
-## Status
-
-The plugin is in a refinement and stabilization phase. Core media-category
-assignment, filtering, and virtual-folder behavior are implemented, with most
-remaining work centered around browser validation and UI polish.
 
 ## License
 
