@@ -2,13 +2,13 @@
 
 Current version: `1.0.4`
 
-Media Categories is a WordPress plugin that adds a hierarchical `media_category`
-taxonomy to attachments and presents those terms as folder-like organization
-tools inside the Media Library.
+Media Categories is a WordPress plugin that adds a hierarchical category
+taxonomy to attachments. Media items can belong to multiple categories, and
+parent categories can be used like virtual folders that include descendant
+items.
 
-The plugin is taxonomy-based rather than filesystem-based. Media items can
-belong to multiple categories, and parent categories can be used like virtual
-folders that include descendant items.
+This plugin is currently owner-maintained by [Eric Satzman](mailto:esatzman@ucop.edu).
+Pull requests are welcome, but releases and review cycles may be infrequent.
 
 ## Open Source
 
@@ -19,7 +19,6 @@ This project is open source under the MIT License. See [LICENSE](/Users/local-es
 1. Clone the repository.
 2. Place the plugin in your WordPress installation under `wp-content/plugins/media-categories`.
 3. Activate `Media Categories` from the WordPress admin.
-4. Optional: install Composer dev dependencies for linting and tests.
 
 ## Features
 
@@ -32,48 +31,6 @@ This project is open source under the MIT License. See [LICENSE](/Users/local-es
 - Virtual folder sidebar in Media Library grid view
 - Built-in `All Files` and `Uncategorized` virtual folders
 - Create, rename, and delete folder actions from the grid sidebar
-
-## Plugin Structure
-
-- [media-categories.php](/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories/media-categories.php): plugin bootstrap and metadata
-- [includes/class-plugin.php](/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories/includes/class-plugin.php): service registration
-- [includes/class-taxonomy.php](/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories/includes/class-taxonomy.php): taxonomy registration
-- [includes/class-settings.php](/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories/includes/class-settings.php): admin settings page
-- [includes/class-attachment-fields.php](/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories/includes/class-attachment-fields.php): attachment assignment UI
-- [includes/class-media-filters.php](/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories/includes/class-media-filters.php): list and grid filtering
-- [includes/class-folder-sidebar.php](/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories/includes/class-folder-sidebar.php): virtual folder sidebar and AJAX actions
-- [assets/js/media-grid.js](/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories/assets/js/media-grid.js): grid-mode interactions
-- [assets/css/admin.css](/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories/assets/css/admin.css): admin-side styling
-
-## Local Development
-
-Plugin path:
-`/Users/local-esatzman/Desktop/Sites/media-categories/app/public/wp-content/plugins/media-categories`
-
-WordPress install path:
-`/Users/local-esatzman/Desktop/Sites/media-categories/app/public`
-
-### Useful Commands
-
-```bash
-php -l media-categories.php
-php -l includes/class-folder-sidebar.php
-php -l includes/class-attachment-fields.php
-git status
-```
-
-If Composer dependencies are installed, the repository also includes:
-
-```bash
-composer lint
-composer test
-```
-
-## Release Tooling
-
-Release packaging and updater deployment tooling are intentionally kept outside
-this plugin repository. The plugin repo is suitable for public distribution;
-private build and hosted-updater files are managed separately.
 
 ## Contributing
 
