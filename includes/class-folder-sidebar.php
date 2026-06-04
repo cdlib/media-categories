@@ -21,12 +21,21 @@ class Folder_Sidebar {
 	private $term_counts = array();
 
 	/**
+	 * Whether the sidebar has already been rendered for this request.
+	 *
+	 * @var bool
+	 */
+	private $rendered = false;
+
+	/**
 	 * Register hooks.
 	 *
 	 * @return void
 	 */
 	public function register() {
 		add_action( 'all_admin_notices', array( $this, 'render_list_sidebar' ) );
+		add_action( 'admin_notices', array( $this, 'render_list_sidebar' ) );
+		add_action( 'restrict_manage_posts', array( $this, 'render_list_sidebar_from_filters' ), 0 );
 		add_action( 'admin_footer-upload.php', array( $this, 'render_sidebar' ) );
 		add_filter( 'admin_body_class', array( $this, 'add_collapsed_body_class' ) );
 		add_action( 'wp_ajax_media_categories_create_term', array( $this, 'ajax_create_term' ) );
@@ -74,12 +83,30 @@ class Folder_Sidebar {
 	}
 
 	/**
+	 * Render the list sidebar from the list-table filter hook when notice hooks are unavailable.
+	 *
+	 * @param string $post_type Post type.
+	 * @return void
+	 */
+	public function render_list_sidebar_from_filters( $post_type ) {
+		if ( 'attachment' !== $post_type || 'list' !== $this->get_media_library_mode() ) {
+			return;
+		}
+
+		$this->render_sidebar();
+	}
+
+	/**
 	 * Render sidebar on media library screen.
 	 *
 	 * @return void
 	 */
 	public function render_sidebar() {
-		if ( ! is_media_library_screen() || ! current_user_can( 'upload_files' ) ) {
+		if ( $this->rendered ) {
+			return;
+		}
+
+		if ( ! $this->is_upload_screen() || ! current_user_can( 'upload_files' ) ) {
 			return;
 		}
 
@@ -90,6 +117,7 @@ class Folder_Sidebar {
 		$current = isset( $_GET['media_category_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['media_category_filter'] ) ) : '';
 		$tree    = $this->get_term_tree();
 		$can_manage = current_user_can( MANAGE_CAP );
+		$this->rendered = true;
 		?>
 		<div class="media-categories-layout" data-media-categories-sidebar-root="true">
 			<aside class="media-categories-sidebar" aria-label="<?php esc_attr_e( 'Media category folders', 'media-categories' ); ?>">

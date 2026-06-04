@@ -201,6 +201,13 @@ body.upload-php .media-frame-toolbar .media-toolbar-secondary select {
 	max-width: 170px;
 }
 
+body.upload-php.mode-grid .attachments-browser .media-toolbar-secondary #media-categories-attachment-filters,
+body.upload-php.mode-grid .media-frame-toolbar .media-toolbar-secondary #media-categories-attachment-filters {
+	width: 170px !important;
+	max-width: 170px !important;
+	min-width: 170px;
+}
+
 body.upload-php .attachments-browser .media-toolbar-secondary .media-categories-browse-button,
 body.upload-php .media-frame-toolbar .media-toolbar-secondary .media-categories-browse-button {
 	margin: 0;
@@ -246,12 +253,6 @@ body.upload-php.mode-grid:not(.media-categories-sidebar-collapsed) .attachments-
 body.upload-php.mode-grid:not(.media-categories-sidebar-collapsed) .media-frame-toolbar .media-toolbar-secondary > .attachment-filters {
 	width: 150px;
 	max-width: 150px;
-}
-
-body.upload-php.mode-grid:not(.media-categories-sidebar-collapsed) .attachments-browser .media-toolbar-secondary > #media-categories-author-filters,
-body.upload-php.mode-grid:not(.media-categories-sidebar-collapsed) .media-frame-toolbar .media-toolbar-secondary > #media-categories-author-filters {
-	width: 130px;
-	max-width: 130px;
 }
 
 body.upload-php:not(.media-categories-sidebar-collapsed) .attachments-browser .media-toolbar-primary.search-form,
@@ -452,6 +453,12 @@ body.upload-php.media-categories-sidebar-collapsed:not(.mode-grid) .wrap.media-c
 	margin-left: 0;
 }
 
+body.upload-php.media-categories-sidebar-collapsed:not(.mode-grid) .wrap > .media-categories-layout,
+body.upload-php.media-categories-sidebar-collapsed:not(.mode-grid) .wrap.media-categories-list-layout > .media-categories-layout {
+	width: 0;
+	margin-right: 0;
+}
+
 body.upload-php .media-categories-list-body {
 	display: grid;
 	grid-template-columns: 260px minmax(0, 1fr);
@@ -484,7 +491,7 @@ body.upload-php.media-categories-sidebar-collapsed .media-categories-list-body {
 body.upload-php #posts-filter .media-categories-browse-button {
 	display: inline-flex;
 	align-items: center;
-	height: 30px;
+	height: 32px;
 	min-height: 0;
 	padding: 0 10px;
 	line-height: 2.15384615;
@@ -500,6 +507,20 @@ body.upload-php #posts-filter .wp-filter .search-box {
 
 body.upload-php #posts-filter .wp-filter .search-box .media-categories-browse-button {
 	margin-right: 0;
+}
+
+body.upload-php:not(.mode-grid) #posts-filter .wp-filter #filter-by-media-category {
+	width: 170px;
+	max-width: 170px;
+}
+
+body.upload-php:not(.mode-grid) #posts-filter .media-categories-list-action-row {
+	clear: none;
+	padding: 12px 0 0;
+}
+
+body.upload-php:not(.mode-grid) #posts-filter .media-categories-list-action-row .media-categories-browse-button {
+	margin: 0;
 }
 
 .media-categories-dropdown {

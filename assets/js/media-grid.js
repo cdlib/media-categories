@@ -13,7 +13,6 @@
 	const sidebarSessionKey = 'mediaCategoriesSidebarCollapsed';
 	const sidebarCookieKey = 'mediaCategoriesSidebarCollapsed';
 	let nativeGridFilterRegistered = false;
-	let nativeGridAuthorFilterRegistered = false;
 	let sidebarToggleButtonView = null;
 	let initialToolbarSelectionsSynced = false;
 
@@ -131,34 +130,6 @@
 			);
 		}
 
-		if ( Array.isArray( data.authorOptions ) && data.authorOptions.length && ! nativeGridAuthorFilterRegistered ) {
-			wp.media.view.MediaCategoriesAuthorFilter = buildNativeGridAuthorFilterView();
-			nativeGridAuthorFilterRegistered = true;
-		}
-
-		if ( wp.media.view.MediaCategoriesAuthorFilter && ! browser.toolbar.get( 'mediaCategoriesAuthorFilter' ) ) {
-			browser.toolbar.set(
-				'mediaCategoriesAuthorFilterLabel',
-				new wp.media.view.Label( {
-					value: data.authorLabel,
-					attributes: {
-						for: 'media-categories-author-filters'
-					},
-					priority: -73,
-					className: 'screen-reader-text'
-				} ).render()
-			);
-
-			browser.toolbar.set(
-				'mediaCategoriesAuthorFilter',
-				new wp.media.view.MediaCategoriesAuthorFilter( {
-					controller: browser.controller,
-					model: browser.collection.props,
-					priority: -73
-				} ).render()
-			);
-		}
-
 		if ( ! browser.toolbar.get( 'mediaCategoriesBrowseButton' ) ) {
 			browser.toolbar.set(
 				'mediaCategoriesBrowseButton',
@@ -169,10 +140,7 @@
 					style: 'secondary',
 					size: '',
 					className: 'media-categories-browse-button',
-					click: function() {
-						const isCollapsed = ! $( 'body' ).hasClass( 'media-categories-sidebar-collapsed' );
-						setSidebarCollapsedState( isCollapsed, true );
-					}
+					click: toggleSidebarPanel
 				} ).render()
 			);
 		}
@@ -190,61 +158,9 @@
 					filterView.select();
 				}
 			}
-
-			if ( data.authorSelected ) {
-				browser.collection.props.set( 'author', String( data.authorSelected ) );
-				const authorFilterView = browser.toolbar.get( 'mediaCategoriesAuthorFilter' );
-
-				if ( authorFilterView && typeof authorFilterView.select === 'function' ) {
-					authorFilterView.select();
-				}
-			}
 		}
 
 		updateSidebarToggleButton();
-	}
-
-	function buildNativeGridAuthorFilterView() {
-		if ( ! wp.media || ! wp.media.view || ! wp.media.view.AttachmentFilters ) {
-			return;
-		}
-
-		return wp.media.view.AttachmentFilters.extend( {
-			id: 'media-categories-author-filters',
-
-			createFilters: function() {
-				const filters = {
-					all: {
-						text: data.allAuthorsLabel,
-						props: {
-							author: null
-						},
-						priority: 10
-					}
-				};
-
-				data.authorOptions.forEach( function( author ) {
-					if ( ! author || ! author.value || ! author.label ) {
-						return;
-					}
-
-					filters[ String( author.value ) ] = {
-						text: String( author.label ),
-						props: {
-							author: String( author.value )
-						},
-						priority: 20
-					};
-				} );
-
-				this.filters = filters;
-			},
-
-			initialize: function() {
-				wp.media.view.AttachmentFilters.prototype.initialize.apply( this, arguments );
-				this.$el.attr( 'aria-label', data.authorLabel );
-			}
-		} );
 	}
 
 	function normalizeToolbarSearch() {
@@ -299,7 +215,7 @@
 		}
 
 		if ( isCollapsed && ! searchForm.parent().is( toolbar ) ) {
-			searchForm.insertAfter( actionRow );
+			searchForm.insertAfter( toolbarSecondary );
 		} else if ( ! isCollapsed && ( ! searchForm.parent().is( actionRow ) || ! searchForm.prev().is( bulkButton ) ) ) {
 			searchForm.insertAfter( bulkButton );
 		}
@@ -311,18 +227,36 @@
 
 	function placeListSidebarButton() {
 		const listForm = $( '#posts-filter' ).first();
+		const filterBar = listForm.find( '.wp-filter' ).first();
 		const searchBox = listForm.find( '.wp-filter .search-box' ).first();
-		const searchInput = searchBox.find( 'input[type="search"]' ).first();
 		const button = listForm.find( '.media-categories-browse-button' ).first();
+		const categoryFilter = filterBar.find( '#filter-by-media-category' ).first();
+		const filterButton = filterBar.find( '#post-query-submit' ).first();
+		let actionRow = listForm.find( '.media-categories-list-action-row' ).first();
 
 		listForm.children( 'input[type="hidden"][name="author"]' ).remove();
+		filterBar.find( '#author' ).remove();
+		filterBar.find( '#filter-by-media-author' ).remove();
 
-		if ( ! searchBox.length || ! searchInput.length || ! button.length ) {
+		if ( ! filterBar.length || ! button.length ) {
 			return;
 		}
 
-		if ( ! button.next().is( searchInput ) ) {
-			button.insertBefore( searchInput );
+		if ( categoryFilter.length && filterButton.length && ! categoryFilter.next().is( filterButton ) ) {
+			filterButton.insertAfter( categoryFilter );
+		}
+
+		if ( searchBox.length && ! searchBox.parent().is( filterBar ) ) {
+			filterBar.append( searchBox );
+		}
+
+		if ( ! actionRow.length ) {
+			actionRow = $( '<div class="media-categories-list-action-row"></div>' );
+			actionRow.insertAfter( filterBar );
+		}
+
+		if ( ! button.parent().is( actionRow ) ) {
+			actionRow.append( button );
 		}
 	}
 
@@ -337,10 +271,12 @@
 		const mediaFrame = wrap.find( '.media-frame' ).first();
 		const listForm = wrap.find( '#posts-filter' ).first();
 		const target = mediaFrame.length ? mediaFrame : listForm;
+		const isGrid = mediaFrame.length > 0;
 
-		wrap.toggleClass( 'media-categories-list-layout', ! mediaFrame.length && listForm.length );
+		$( 'body' ).toggleClass( 'mode-grid', isGrid ).toggleClass( 'mode-list', ! isGrid && listForm.length > 0 );
+		wrap.toggleClass( 'media-categories-list-layout', ! isGrid && listForm.length );
 
-		if ( ! mediaFrame.length && listForm.length ) {
+		if ( ! isGrid && listForm.length ) {
 			placeListSidebarButton();
 
 			if ( ! sidebar.next().is( listForm ) ) {
@@ -387,11 +323,7 @@
 			browser.collection.props.set( 'media_category_filter', data.selected );
 		}
 
-		if ( data.authorSelected ) {
-			browser.collection.props.set( 'author', String( data.authorSelected ) );
-		}
-
-		if ( data.selected || data.authorSelected ) {
+		if ( data.selected ) {
 			browser.collection._requery( true );
 		}
 	}
@@ -415,12 +347,20 @@
 			}, 100 );
 		} );
 
-		$( document ).on( 'click', '#posts-filter .media-categories-browse-button', function( event ) {
-			const isCollapsed = ! $( 'body' ).hasClass( 'media-categories-sidebar-collapsed' );
+		$( document ).on( 'click', '#posts-filter .media-categories-browse-button', toggleSidebarPanel );
+	}
 
+	function toggleSidebarPanel( event ) {
+		const isCollapsed = ! $( 'body' ).hasClass( 'media-categories-sidebar-collapsed' );
+
+		if ( event ) {
 			event.preventDefault();
-			setSidebarCollapsedState( isCollapsed, true );
-		} );
+			event.stopPropagation();
+		}
+
+		placeSidebar();
+		setSidebarCollapsedState( isCollapsed, true );
+		placeGridSidebarButton();
 	}
 
 	function refreshSidebarCounts() {
