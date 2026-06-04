@@ -378,9 +378,28 @@ body.upload-php.mode-grid .media-frame {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+	position: relative;
 	width: 100%;
 	min-height: 40px;
+	padding-right: 34px;
 	text-align: left;
+}
+
+.media-categories-dropdown__button::after {
+	position: absolute;
+	top: 50%;
+	right: 14px;
+	width: 0;
+	height: 0;
+	border-right: 6px solid transparent;
+	border-left: 6px solid transparent;
+	border-top: 7px solid #2563eb;
+	content: "";
+	transform: translateY(-50%);
+}
+
+.media-categories-dropdown.is-open .media-categories-dropdown__button::after {
+	transform: translateY(-50%) rotate(180deg);
 }
 
 .media-categories-dropdown__button:focus {

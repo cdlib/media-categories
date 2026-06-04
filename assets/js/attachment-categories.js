@@ -73,10 +73,6 @@
 
 		dropdown.data( 'media-categories-dropdown-bound', true );
 
-		dropdown.on( 'click.mediaCategoriesDropdown', '.media-categories-dropdown__button', function() {
-			setExpanded( dropdown, ! dropdown.hasClass( 'is-open' ) );
-		} );
-
 		dropdown.on( 'change.mediaCategoriesDropdown', 'input[type="checkbox"]', function() {
 			const checkbox = $( this );
 
@@ -104,6 +100,14 @@
 			bindDropdown( $( this ) );
 		} );
 	}
+
+	$( document ).on( 'click.mediaCategoriesDropdown', '.media-categories-dropdown__button', function( event ) {
+		const dropdown = $( this ).closest( '.media-categories-dropdown' );
+
+		event.preventDefault();
+		bindDropdown( dropdown );
+		setExpanded( dropdown, ! dropdown.hasClass( 'is-open' ) );
+	} );
 
 	$( document ).on( 'click.mediaCategoriesDropdown', function( event ) {
 		$( '.media-categories-dropdown.is-open' ).each( function() {
