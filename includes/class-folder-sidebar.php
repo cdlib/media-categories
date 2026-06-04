@@ -26,6 +26,7 @@ class Folder_Sidebar {
 	 * @return void
 	 */
 	public function register() {
+		add_action( 'all_admin_notices', array( $this, 'render_list_sidebar' ) );
 		add_action( 'admin_footer-upload.php', array( $this, 'render_sidebar' ) );
 		add_filter( 'admin_body_class', array( $this, 'add_collapsed_body_class' ) );
 		add_action( 'wp_ajax_media_categories_create_term', array( $this, 'ajax_create_term' ) );
@@ -40,11 +41,36 @@ class Folder_Sidebar {
 	 * @return string
 	 */
 	public function add_collapsed_body_class( $classes ) {
-		if ( is_media_library_screen() ) {
+		$mode = $this->get_media_library_mode();
+
+		if ( $this->is_upload_screen() && $mode ) {
+			$classes .= ' mode-' . $mode;
+		}
+
+		$is_collapsed = true;
+
+		if ( 'list' === $mode ) {
+			$is_collapsed = ! isset( $_COOKIE['mediaCategoriesSidebarCollapsed'] ) || '0' !== sanitize_text_field( wp_unslash( $_COOKIE['mediaCategoriesSidebarCollapsed'] ) );
+		}
+
+		if ( $this->is_upload_screen() && $is_collapsed ) {
 			$classes .= ' media-categories-sidebar-collapsed';
 		}
 
 		return $classes;
+	}
+
+	/**
+	 * Render the sidebar early in list view to avoid post-load layout shifts.
+	 *
+	 * @return void
+	 */
+	public function render_list_sidebar() {
+		if ( 'list' !== $this->get_media_library_mode() ) {
+			return;
+		}
+
+		$this->render_sidebar();
 	}
 
 	/**
@@ -54,6 +80,10 @@ class Folder_Sidebar {
 	 */
 	public function render_sidebar() {
 		if ( ! is_media_library_screen() || ! current_user_can( 'upload_files' ) ) {
+			return;
+		}
+
+		if ( 'list' === $this->get_media_library_mode() && doing_action( 'admin_footer-upload.php' ) ) {
 			return;
 		}
 
@@ -100,6 +130,32 @@ class Folder_Sidebar {
 	}
 
 	/**
+	 * Get the current media library view mode.
+	 *
+	 * @return string
+	 */
+	private function get_media_library_mode() {
+		if ( ! $this->is_upload_screen() ) {
+			return '';
+		}
+
+		$mode = isset( $_GET['mode'] ) ? sanitize_key( wp_unslash( $_GET['mode'] ) ) : get_user_setting( 'posts_list_mode', 'list' );
+
+		return in_array( $mode, array( 'grid', 'list' ), true ) ? $mode : 'list';
+	}
+
+	/**
+	 * Whether the current request is for the media library screen.
+	 *
+	 * @return bool
+	 */
+	private function is_upload_screen() {
+		global $pagenow;
+
+		return is_media_library_screen() || 'upload.php' === $pagenow;
+	}
+
+	/**
 	 * Render a term node recursively.
 	 *
 	 * @param array  $node Tree node.
@@ -129,10 +185,13 @@ class Folder_Sidebar {
 	 * @return void
 	 */
 	private function render_folder_item( $value, $label, $count, $current, $children, $is_all_files = false, $term_id = 0 ) {
+		$mode = isset( $_GET['mode'] ) ? sanitize_key( wp_unslash( $_GET['mode'] ) ) : get_user_setting( 'posts_list_mode', 'list' );
+		$mode = in_array( $mode, array( 'grid', 'list' ), true ) ? $mode : 'list';
+
 		$url = add_query_arg(
 			array(
 				'post_type'             => 'attachment',
-				'mode'                  => isset( $_GET['mode'] ) ? sanitize_key( wp_unslash( $_GET['mode'] ) ) : null,
+				'mode'                  => $mode,
 				'media_category_filter' => $value,
 			),
 			admin_url( 'upload.php' )

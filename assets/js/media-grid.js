@@ -1,7 +1,7 @@
 ( function( $, wp ) {
 	'use strict';
 
-	if ( ! wp || ! wp.media || ! window.mediaCategoriesData ) {
+	if ( ! window.mediaCategoriesData ) {
 		return;
 	}
 
@@ -11,10 +11,17 @@
 	let frameEventsBound = false;
 	let sidebarRefreshTimer = null;
 	const sidebarSessionKey = 'mediaCategoriesSidebarCollapsed';
+	const sidebarCookieKey = 'mediaCategoriesSidebarCollapsed';
 	let nativeGridFilterRegistered = false;
+	let nativeGridAuthorFilterRegistered = false;
 	let sidebarToggleButtonView = null;
+	let initialToolbarSelectionsSynced = false;
 
 	function getBrowser() {
+		if ( ! wp || ! wp.media ) {
+			return null;
+		}
+
 		if ( wp.media.frame && wp.media.frame.content ) {
 			const browser = wp.media.frame.content.get();
 
@@ -124,13 +131,41 @@
 			);
 		}
 
+		if ( Array.isArray( data.authorOptions ) && data.authorOptions.length && ! nativeGridAuthorFilterRegistered ) {
+			wp.media.view.MediaCategoriesAuthorFilter = buildNativeGridAuthorFilterView();
+			nativeGridAuthorFilterRegistered = true;
+		}
+
+		if ( wp.media.view.MediaCategoriesAuthorFilter && ! browser.toolbar.get( 'mediaCategoriesAuthorFilter' ) ) {
+			browser.toolbar.set(
+				'mediaCategoriesAuthorFilterLabel',
+				new wp.media.view.Label( {
+					value: data.authorLabel,
+					attributes: {
+						for: 'media-categories-author-filters'
+					},
+					priority: -73,
+					className: 'screen-reader-text'
+				} ).render()
+			);
+
+			browser.toolbar.set(
+				'mediaCategoriesAuthorFilter',
+				new wp.media.view.MediaCategoriesAuthorFilter( {
+					controller: browser.controller,
+					model: browser.collection.props,
+					priority: -73
+				} ).render()
+			);
+		}
+
 		if ( ! browser.toolbar.get( 'mediaCategoriesBrowseButton' ) ) {
 			browser.toolbar.set(
 				'mediaCategoriesBrowseButton',
 				new wp.media.view.Button( {
 					text: data.strings.browseButton,
 					controller: browser.controller,
-					priority: -73,
+					priority: -72,
 					style: 'secondary',
 					size: '',
 					className: 'media-categories-browse-button',
@@ -144,16 +179,72 @@
 
 		sidebarToggleButtonView = browser.toolbar.get( 'mediaCategoriesBrowseButton' ) || null;
 
-		if ( data.selected ) {
-			browser.collection.props.set( 'media_category_filter', data.selected );
-			const filterView = browser.toolbar.get( 'mediaCategoriesFilter' );
+		if ( ! initialToolbarSelectionsSynced ) {
+			initialToolbarSelectionsSynced = true;
 
-			if ( filterView && typeof filterView.select === 'function' ) {
-				filterView.select();
+			if ( data.selected ) {
+				browser.collection.props.set( 'media_category_filter', data.selected );
+				const filterView = browser.toolbar.get( 'mediaCategoriesFilter' );
+
+				if ( filterView && typeof filterView.select === 'function' ) {
+					filterView.select();
+				}
+			}
+
+			if ( data.authorSelected ) {
+				browser.collection.props.set( 'author', String( data.authorSelected ) );
+				const authorFilterView = browser.toolbar.get( 'mediaCategoriesAuthorFilter' );
+
+				if ( authorFilterView && typeof authorFilterView.select === 'function' ) {
+					authorFilterView.select();
+				}
 			}
 		}
 
 		updateSidebarToggleButton();
+	}
+
+	function buildNativeGridAuthorFilterView() {
+		if ( ! wp.media || ! wp.media.view || ! wp.media.view.AttachmentFilters ) {
+			return;
+		}
+
+		return wp.media.view.AttachmentFilters.extend( {
+			id: 'media-categories-author-filters',
+
+			createFilters: function() {
+				const filters = {
+					all: {
+						text: data.allAuthorsLabel,
+						props: {
+							author: null
+						},
+						priority: 10
+					}
+				};
+
+				data.authorOptions.forEach( function( author ) {
+					if ( ! author || ! author.value || ! author.label ) {
+						return;
+					}
+
+					filters[ String( author.value ) ] = {
+						text: String( author.label ),
+						props: {
+							author: String( author.value )
+						},
+						priority: 20
+					};
+				} );
+
+				this.filters = filters;
+			},
+
+			initialize: function() {
+				wp.media.view.AttachmentFilters.prototype.initialize.apply( this, arguments );
+				this.$el.attr( 'aria-label', data.authorLabel );
+			}
+		} );
 	}
 
 	function normalizeToolbarSearch() {
@@ -165,32 +256,100 @@
 			return;
 		}
 
-		searchForm.css( {
-			display: 'block',
-			marginRight: '10px'
-		} );
-
 		if ( searchLabel.length ) {
 			searchLabel.remove();
 		}
 
 		searchInput.attr( 'placeholder', 'Search media' ).css( {
-			width: '100%'
+			width: ''
 		} );
+	}
+
+	function placeGridSidebarButton() {
+		const browser = getBrowser();
+
+		if ( ! browser || ! browser.controller || ! browser.controller.isModeActive || ! browser.controller.isModeActive( 'grid' ) ) {
+			return;
+		}
+
+		const toolbar = $( '.attachments-browser .media-toolbar, .media-frame-toolbar .media-toolbar' ).first();
+		const toolbarSecondary = toolbar.find( '.media-toolbar-secondary' ).first();
+		const searchForm = $( '.attachments-browser .media-toolbar-primary.search-form, .media-frame-toolbar .media-toolbar-primary.search-form' ).first();
+		let actionRow = toolbar.find( '.media-categories-grid-action-row' ).first();
+		const browseButton = toolbar.find( '.media-categories-browse-button' ).first();
+		const bulkButton = toolbar.find( '.select-mode-toggle-button' ).first();
+		const spinner = toolbar.find( '.spinner' ).first();
+		const isCollapsed = $( 'body' ).hasClass( 'media-categories-sidebar-collapsed' );
+
+		if ( ! toolbar.length || ! toolbarSecondary.length || ! searchForm.length || ! browseButton.length || ! bulkButton.length ) {
+			return;
+		}
+
+		if ( ! actionRow.length ) {
+			actionRow = $( '<div class="media-categories-grid-action-row"></div>' );
+			actionRow.insertAfter( toolbarSecondary );
+		}
+
+		if ( ! browseButton.parent().is( actionRow ) || ! browseButton.next().is( bulkButton ) ) {
+			actionRow.append( browseButton );
+		}
+
+		if ( ! bulkButton.parent().is( actionRow ) || ! bulkButton.prev().is( browseButton ) ) {
+			bulkButton.insertAfter( browseButton );
+		}
+
+		if ( isCollapsed && ! searchForm.parent().is( toolbar ) ) {
+			searchForm.insertAfter( actionRow );
+		} else if ( ! isCollapsed && ( ! searchForm.parent().is( actionRow ) || ! searchForm.prev().is( bulkButton ) ) ) {
+			searchForm.insertAfter( bulkButton );
+		}
+
+		if ( spinner.length && ! spinner.prev().is( searchForm ) ) {
+			spinner.insertAfter( searchForm );
+		}
+	}
+
+	function placeListSidebarButton() {
+		const listForm = $( '#posts-filter' ).first();
+		const searchBox = listForm.find( '.wp-filter .search-box' ).first();
+		const searchInput = searchBox.find( 'input[type="search"]' ).first();
+		const button = listForm.find( '.media-categories-browse-button' ).first();
+
+		listForm.children( 'input[type="hidden"][name="author"]' ).remove();
+
+		if ( ! searchBox.length || ! searchInput.length || ! button.length ) {
+			return;
+		}
+
+		if ( ! button.next().is( searchInput ) ) {
+			button.insertBefore( searchInput );
+		}
 	}
 
 	function placeSidebar() {
 		const sidebar = $( '.media-categories-layout' ).first();
 		const wrap = $( 'body.upload-php .wrap' ).first();
 
-		if ( ! sidebar.length || ! wrap.length || sidebar.parent().is( wrap ) ) {
+		if ( ! sidebar.length || ! wrap.length ) {
 			return;
 		}
 
 		const mediaFrame = wrap.find( '.media-frame' ).first();
+		const listForm = wrap.find( '#posts-filter' ).first();
+		const target = mediaFrame.length ? mediaFrame : listForm;
 
-		if ( mediaFrame.length ) {
-			sidebar.insertBefore( mediaFrame );
+		wrap.toggleClass( 'media-categories-list-layout', ! mediaFrame.length && listForm.length );
+
+		if ( ! mediaFrame.length && listForm.length ) {
+			placeListSidebarButton();
+
+			if ( ! sidebar.next().is( listForm ) ) {
+				sidebar.insertBefore( listForm );
+			}
+		} else if ( target.length ) {
+			if ( ! sidebar.next().is( target ) ) {
+				sidebar.insertBefore( target );
+			}
 		} else {
 			wrap.append( sidebar );
 		}
@@ -226,13 +385,20 @@
 
 		if ( data.selected ) {
 			browser.collection.props.set( 'media_category_filter', data.selected );
+		}
+
+		if ( data.authorSelected ) {
+			browser.collection.props.set( 'author', String( data.authorSelected ) );
+		}
+
+		if ( data.selected || data.authorSelected ) {
 			browser.collection._requery( true );
 		}
 	}
 
 	function bindSidebarClicks() {
 		$( document ).on( 'click', '.media-categories-folder', function( event ) {
-			if ( ! $( 'body' ).hasClass( 'mode-grid' ) && ! getBrowser() ) {
+			if ( ! $( 'body' ).hasClass( 'mode-grid' ) ) {
 				return;
 			}
 
@@ -247,6 +413,13 @@
 			window.setTimeout( function() {
 				updateLibraryFilter( selected );
 			}, 100 );
+		} );
+
+		$( document ).on( 'click', '#posts-filter .media-categories-browse-button', function( event ) {
+			const isCollapsed = ! $( 'body' ).hasClass( 'media-categories-sidebar-collapsed' );
+
+			event.preventDefault();
+			setSidebarCollapsedState( isCollapsed, true );
 		} );
 	}
 
@@ -329,15 +502,45 @@
 		$body.toggleClass( 'media-categories-sidebar-collapsed', isCollapsed );
 
 		if ( false !== persist ) {
-			window.sessionStorage.setItem( sidebarSessionKey, isCollapsed ? '1' : '0' );
+			window.sessionStorage.setItem( getSidebarSessionKey(), isCollapsed ? '1' : '0' );
+
+			if ( ! isGridMode() ) {
+				document.cookie = sidebarCookieKey + '=' + ( isCollapsed ? '1' : '0' ) + '; path=/; SameSite=Lax';
+			}
 		}
 
 		updateSidebarToggleButton();
 		updateToolbarState();
 	}
 
+	function getSidebarSessionKey() {
+		return sidebarSessionKey + ( isGridMode() ? 'Grid' : 'List' );
+	}
+
+	function isGridMode() {
+		const url = new URL( window.location.href );
+		const mode = url.searchParams.get( 'mode' );
+
+		return 'grid' === mode || $( 'body' ).hasClass( 'mode-grid' ) || $( '.media-frame' ).length > 0;
+	}
+
+	function getCookieValue( name ) {
+		const cookies = document.cookie ? document.cookie.split( '; ' ) : [];
+
+		for ( let index = 0; index < cookies.length; index++ ) {
+			const parts = cookies[ index ].split( '=' );
+
+			if ( decodeURIComponent( parts[0] ) === name ) {
+				return decodeURIComponent( parts.slice( 1 ).join( '=' ) );
+			}
+		}
+
+		return null;
+	}
+
 	function applyStoredSidebarState() {
-		const storedValue = window.sessionStorage.getItem( sidebarSessionKey );
+		const isGrid = isGridMode();
+		const storedValue = window.sessionStorage.getItem( getSidebarSessionKey() ) || ( isGrid ? null : getCookieValue( sidebarCookieKey ) );
 		const isCollapsed = null === storedValue ? true : '1' === storedValue;
 
 		setSidebarCollapsedState( isCollapsed, false );
@@ -668,10 +871,15 @@
 			placeSidebar();
 			normalizeToolbarSearch();
 
-			if ( getBrowser() ) {
+			const browser = getBrowser();
+
+			if ( browser ) {
 				ensureNativeGridFilter();
+				placeGridSidebarButton();
 				applyInitialFilter();
 				bindFrameEvents();
+			} else if ( $( '.media-categories-layout' ).length && $( '.wrap.media-categories-list-layout' ).length ) {
+				window.clearInterval( interval );
 			}
 
 			updateToolbarState();

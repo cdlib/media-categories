@@ -36,6 +36,7 @@ class Media_Filters {
 		}
 
 		$selected = isset( $_GET['media_category_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['media_category_filter'] ) ) : '';
+		$author   = isset( $_GET['author'] ) ? absint( wp_unslash( $_GET['author'] ) ) : 0;
 
 		$options = get_terms(
 			array(
@@ -60,6 +61,74 @@ class Media_Filters {
 		}
 
 		echo '</select>';
+
+		$this->render_author_filter( $author );
+
+		echo '<button type="button" class="button media-categories-browse-button">' . esc_html__( 'Open side panel', 'media-categories' ) . '</button>';
+	}
+
+	/**
+	 * Render attachment author dropdown for list mode.
+	 *
+	 * @param int $selected Selected author ID.
+	 * @return void
+	 */
+	private function render_author_filter( $selected ) {
+		$authors = $this->get_attachment_author_options();
+
+		if ( empty( $authors ) ) {
+			return;
+		}
+
+		echo '<label class="screen-reader-text" for="filter-by-media-author">' . esc_html__( 'Filter by author', 'media-categories' ) . '</label>';
+		echo '<select id="filter-by-media-author" name="author">';
+		echo '<option value="0">' . esc_html__( 'All authors', 'media-categories' ) . '</option>';
+
+		foreach ( $authors as $author ) {
+			printf(
+				'<option value="%1$d" %2$s>%3$s</option>',
+				(int) $author['value'],
+				selected( (int) $author['value'], $selected, false ),
+				esc_html( $author['label'] )
+			);
+		}
+
+		echo '</select>';
+	}
+
+	/**
+	 * Get users who are authors of attachments.
+	 *
+	 * @return array<int,array{value:int,label:string}>
+	 */
+	private function get_attachment_author_options() {
+		global $wpdb;
+
+		$author_ids = $wpdb->get_col(
+			"SELECT DISTINCT post_author FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_author > 0 ORDER BY post_author ASC"
+		);
+
+		if ( empty( $author_ids ) ) {
+			return array();
+		}
+
+		$users = get_users(
+			array(
+				'include' => array_map( 'intval', $author_ids ),
+				'orderby' => 'display_name',
+				'fields'  => array( 'ID', 'display_name', 'user_login' ),
+			)
+		);
+
+		return array_map(
+			static function ( $user ) {
+				return array(
+					'value' => (int) $user->ID,
+					'label' => $user->display_name ? $user->display_name : $user->user_login,
+				);
+			},
+			$users
+		);
 	}
 
 	/**
@@ -94,34 +163,41 @@ class Media_Filters {
 	 */
 	public function apply_grid_filters( $query ) {
 		$selected = '';
+		$author   = 0;
 
 		if ( isset( $_REQUEST['query']['media_category_filter'] ) ) {
 			$selected = sanitize_text_field( wp_unslash( $_REQUEST['query']['media_category_filter'] ) );
 		}
 
-		if ( '' === $selected ) {
-			return $query;
+		if ( isset( $_REQUEST['query']['author'] ) ) {
+			$author = absint( $_REQUEST['query']['author'] );
 		}
 
-		if ( 'uncategorized' === $selected ) {
+		if ( $author > 0 ) {
+			$query['author'] = $author;
+		}
+
+		if ( '' !== $selected ) {
+			if ( 'uncategorized' === $selected ) {
+				$query['tax_query'] = array(
+					array(
+						'taxonomy' => TAXONOMY,
+						'operator' => 'NOT EXISTS',
+					),
+				);
+
+				return $query;
+			}
+
 			$query['tax_query'] = array(
 				array(
-					'taxonomy' => TAXONOMY,
-					'operator' => 'NOT EXISTS',
+					'taxonomy'         => TAXONOMY,
+					'field'            => 'term_id',
+					'terms'            => array( (int) $selected ),
+					'include_children' => true,
 				),
 			);
-
-			return $query;
 		}
-
-		$query['tax_query'] = array(
-			array(
-				'taxonomy'         => TAXONOMY,
-				'field'            => 'term_id',
-				'terms'            => array( (int) $selected ),
-				'include_children' => true,
-			),
-		);
 
 		return $query;
 	}

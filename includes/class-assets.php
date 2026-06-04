@@ -72,6 +72,7 @@ class Assets {
 				)
 			);
 			$term_options = get_media_category_term_options( TAXONOMY );
+			$author_options = $this->get_attachment_author_options();
 
 			$grid_js_version = $this->get_asset_version( MEDIA_CATEGORIES_DIR . 'assets/js/media-grid.js' );
 
@@ -104,6 +105,10 @@ class Assets {
 					'uncategorized'   => __( 'Uncategorized', 'media-categories' ),
 					'allLabel'        => __( 'All categories', 'media-categories' ),
 					'termOptions'     => array_values( $term_options ),
+					'authorSelected'  => isset( $_GET['author'] ) ? absint( wp_unslash( $_GET['author'] ) ) : 0,
+					'authorLabel'     => __( 'Filter by author', 'media-categories' ),
+					'allAuthorsLabel' => __( 'All authors', 'media-categories' ),
+					'authorOptions'   => array_values( $author_options ),
 					'libraryTitle'    => __( 'Media Categories', 'media-categories' ),
 					'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
 					'nonce'           => wp_create_nonce( 'media_categories_manage_terms' ),
@@ -160,5 +165,40 @@ class Assets {
 		}
 
 		return MEDIA_CATEGORIES_VERSION . '.' . $mtime;
+	}
+
+	/**
+	 * Get users who are authors of attachments for the grid author filter.
+	 *
+	 * @return array<int,array{value:int,label:string}>
+	 */
+	private function get_attachment_author_options() {
+		global $wpdb;
+
+		$author_ids = $wpdb->get_col(
+			"SELECT DISTINCT post_author FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_author > 0 ORDER BY post_author ASC"
+		);
+
+		if ( empty( $author_ids ) ) {
+			return array();
+		}
+
+		$users = get_users(
+			array(
+				'include' => array_map( 'intval', $author_ids ),
+				'orderby' => 'display_name',
+				'fields'  => array( 'ID', 'display_name', 'user_login' ),
+			)
+		);
+
+		return array_map(
+			static function ( $user ) {
+				return array(
+					'value' => (int) $user->ID,
+					'label' => $user->display_name ? $user->display_name : $user->user_login,
+				);
+			},
+			$users
+		);
 	}
 }
