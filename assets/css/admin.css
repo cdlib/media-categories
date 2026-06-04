@@ -430,12 +430,25 @@ body.upload-php.mode-grid .media-frame {
 .media-categories-dropdown__option {
 	display: flex;
 	align-items: center;
+	justify-content: flex-start;
 	gap: 8px;
 	margin: 0;
 	padding: 7px 8px 7px calc(8px + (var(--media-categories-depth, 0) * 18px));
 	border-radius: 3px;
 	color: #1d2327;
 	line-height: 1.3;
+	text-align: left;
+}
+
+.media-categories-dropdown__option input[type="checkbox"] {
+	flex: 0 0 auto;
+}
+
+.media-categories-dropdown__option span {
+	display: block;
+	flex: 1 1 auto;
+	min-width: 0;
+	text-align: left !important;
 }
 
 .media-categories-dropdown__option:hover {
