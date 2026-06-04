@@ -1,15 +1,41 @@
 ( function( $, wp ) {
 	'use strict';
 
-	if ( ! window.mediaCategoriesData ) {
-		return;
-	}
-
-	const data = window.mediaCategoriesData;
+	const fallbackData = {
+		terms: [],
+		selected: '',
+		dropdownLabel: 'Filter by Media Categories',
+		uncategorized: 'Uncategorized',
+		allLabel: 'All categories',
+		termOptions: [],
+		libraryTitle: 'Media Categories',
+		ajaxUrl: '',
+		nonce: '',
+		canManage: false,
+		strings: {
+			createPrompt: 'Create New Folder',
+			nameLabel: 'Folder name',
+			parentLabel: 'Parent folder',
+			noneOption: 'None',
+			createButton: 'Create Folder',
+			cancelButton: 'Cancel',
+			nameRequired: 'Please enter a folder name.',
+			renamePrompt: 'Enter a new folder name.',
+			deleteConfirm: 'Delete this folder? Media items will remain in the library.',
+			selectFolder: 'Select a folder first.',
+			browseButton: 'Open side panel',
+			closePanelButton: 'Close side panel'
+		}
+	};
+	const localizedData = window.mediaCategoriesData || {};
+	const data = $.extend( true, {}, fallbackData, localizedData );
 	let initialFilterApplied = false;
 	let sortDescending = false;
 	let frameEventsBound = false;
+	let controlsBound = false;
+	let folderControlsBound = false;
 	let sidebarRefreshTimer = null;
+	let toolbarInterval = null;
 	const sidebarSessionKey = 'mediaCategoriesSidebarCollapsed';
 	const sidebarCookieKey = 'mediaCategoriesSidebarCollapsed';
 	let nativeGridFilterRegistered = false;
@@ -136,11 +162,14 @@
 				new wp.media.view.Button( {
 					text: data.strings.browseButton,
 					controller: browser.controller,
-					priority: -72,
+					priority: -73,
 					style: 'secondary',
 					size: '',
 					className: 'media-categories-browse-button',
-					click: toggleSidebarPanel
+					click: function() {
+						const isCollapsed = ! $( 'body' ).hasClass( 'media-categories-sidebar-collapsed' );
+						setSidebarCollapsedState( isCollapsed, true );
+					}
 				} ).render()
 			);
 		}
@@ -176,53 +205,14 @@
 			searchLabel.remove();
 		}
 
-		searchInput.attr( 'placeholder', 'Search media' ).css( {
-			width: ''
+		searchForm.css( {
+			display: 'block',
+			marginRight: '10px'
 		} );
-	}
 
-	function placeGridSidebarButton() {
-		const browser = getBrowser();
-
-		if ( ! browser || ! browser.controller || ! browser.controller.isModeActive || ! browser.controller.isModeActive( 'grid' ) ) {
-			return;
-		}
-
-		const toolbar = $( '.attachments-browser .media-toolbar, .media-frame-toolbar .media-toolbar' ).first();
-		const toolbarSecondary = toolbar.find( '.media-toolbar-secondary' ).first();
-		const searchForm = $( '.attachments-browser .media-toolbar-primary.search-form, .media-frame-toolbar .media-toolbar-primary.search-form' ).first();
-		let actionRow = toolbar.find( '.media-categories-grid-action-row' ).first();
-		const browseButton = toolbar.find( '.media-categories-browse-button' ).first();
-		const bulkButton = toolbar.find( '.select-mode-toggle-button' ).first();
-		const spinner = toolbar.find( '.spinner' ).first();
-		const isCollapsed = $( 'body' ).hasClass( 'media-categories-sidebar-collapsed' );
-
-		if ( ! toolbar.length || ! toolbarSecondary.length || ! searchForm.length || ! browseButton.length || ! bulkButton.length ) {
-			return;
-		}
-
-		if ( ! actionRow.length ) {
-			actionRow = $( '<div class="media-categories-grid-action-row"></div>' );
-			actionRow.insertAfter( toolbarSecondary );
-		}
-
-		if ( ! browseButton.parent().is( actionRow ) || ! browseButton.next().is( bulkButton ) ) {
-			actionRow.append( browseButton );
-		}
-
-		if ( ! bulkButton.parent().is( actionRow ) || ! bulkButton.prev().is( browseButton ) ) {
-			bulkButton.insertAfter( browseButton );
-		}
-
-		if ( isCollapsed && ! searchForm.parent().is( toolbar ) ) {
-			searchForm.insertAfter( toolbarSecondary );
-		} else if ( ! isCollapsed && ( ! searchForm.parent().is( actionRow ) || ! searchForm.prev().is( bulkButton ) ) ) {
-			searchForm.insertAfter( bulkButton );
-		}
-
-		if ( spinner.length && ! spinner.prev().is( searchForm ) ) {
-			spinner.insertAfter( searchForm );
-		}
+		searchInput.attr( 'placeholder', 'Search media' ).css( {
+			width: '100%'
+		} );
 	}
 
 	function placeListSidebarButton() {
@@ -270,7 +260,6 @@
 
 		const mediaFrame = wrap.find( '.media-frame' ).first();
 		const listForm = wrap.find( '#posts-filter' ).first();
-		const target = mediaFrame.length ? mediaFrame : listForm;
 		const isGrid = mediaFrame.length > 0;
 
 		$( 'body' ).toggleClass( 'mode-grid', isGrid ).toggleClass( 'mode-list', ! isGrid && listForm.length > 0 );
@@ -282,9 +271,9 @@
 			if ( ! sidebar.next().is( listForm ) ) {
 				sidebar.insertBefore( listForm );
 			}
-		} else if ( target.length ) {
-			if ( ! sidebar.next().is( target ) ) {
-				sidebar.insertBefore( target );
+		} else if ( mediaFrame.length ) {
+			if ( ! sidebar.next().is( mediaFrame ) ) {
+				sidebar.insertBefore( mediaFrame );
 			}
 		} else {
 			wrap.append( sidebar );
@@ -329,6 +318,12 @@
 	}
 
 	function bindSidebarClicks() {
+		if ( controlsBound ) {
+			return;
+		}
+
+		controlsBound = true;
+
 		$( document ).on( 'click', '.media-categories-folder', function( event ) {
 			if ( ! $( 'body' ).hasClass( 'mode-grid' ) ) {
 				return;
@@ -360,7 +355,6 @@
 
 		placeSidebar();
 		setSidebarCollapsedState( isCollapsed, true );
-		placeGridSidebarButton();
 	}
 
 	function refreshSidebarCounts() {
@@ -413,6 +407,20 @@
 		$( '.media-categories-browse-button' ).text( buttonText ).attr( 'aria-label', buttonText );
 	}
 
+	function resetVisibleSidebarStyles() {
+		if ( $( 'body' ).hasClass( 'media-categories-sidebar-collapsed' ) ) {
+			return;
+		}
+
+		$( '.media-categories-layout, .media-categories-sidebar, .media-categories-sidebar__inner' ).css( {
+			height: '',
+			opacity: '',
+			overflow: '',
+			pointerEvents: '',
+			transform: ''
+		} );
+	}
+
 	function performFolderAction( action, payload ) {
 		return $.post( data.ajaxUrl, $.extend( {
 			action: action,
@@ -451,6 +459,7 @@
 
 		updateSidebarToggleButton();
 		updateToolbarState();
+		resetVisibleSidebarStyles();
 	}
 
 	function getSidebarSessionKey() {
@@ -690,6 +699,12 @@
 	}
 
 	function bindFolderControls() {
+		if ( folderControlsBound ) {
+			return;
+		}
+
+		folderControlsBound = true;
+
 		$( document ).on( 'click', '.media-categories-toolbar__new', function() {
 			if ( ! data.canManage ) {
 				return;
@@ -797,7 +812,7 @@
 		} );
 	}
 
-	$( function() {
+	function initializeMediaCategories() {
 		if ( ! $( 'body' ).hasClass( 'upload-php' ) ) {
 			return;
 		}
@@ -807,7 +822,11 @@
 		bindFolderControls();
 		applyStoredSidebarState();
 
-		const interval = window.setInterval( function() {
+		if ( toolbarInterval ) {
+			window.clearInterval( toolbarInterval );
+		}
+
+		toolbarInterval = window.setInterval( function() {
 			placeSidebar();
 			normalizeToolbarSearch();
 
@@ -815,14 +834,17 @@
 
 			if ( browser ) {
 				ensureNativeGridFilter();
-				placeGridSidebarButton();
 				applyInitialFilter();
 				bindFrameEvents();
 			} else if ( $( '.media-categories-layout' ).length && $( '.wrap.media-categories-list-layout' ).length ) {
-				window.clearInterval( interval );
+				window.clearInterval( toolbarInterval );
+				toolbarInterval = null;
 			}
 
 			updateToolbarState();
 		}, 300 );
-	} );
+	}
+
+	$( initializeMediaCategories );
+	$( window ).on( 'pageshow', initializeMediaCategories );
 }( jQuery, window.wp ) );
