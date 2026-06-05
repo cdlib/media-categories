@@ -99,6 +99,7 @@ class Assets {
 							is_array( $terms ) ? $terms : array()
 						)
 					),
+					'version'         => MEDIA_CATEGORIES_VERSION,
 					'selected'        => isset( $_GET['media_category_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['media_category_filter'] ) ) : '',
 					'dropdownLabel'   => __( 'Filter by Media Categories', 'media-categories' ),
 					'uncategorized'   => __( 'Uncategorized', 'media-categories' ),

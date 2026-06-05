@@ -3,6 +3,7 @@
 
 	const fallbackData = {
 		terms: [],
+		version: '1',
 		selected: '',
 		dropdownLabel: 'Filter by Media Categories',
 		uncategorized: 'Uncategorized',
@@ -164,11 +165,7 @@
 					priority: -73,
 					style: 'secondary',
 					size: '',
-					className: 'media-categories-browse-button',
-					click: function() {
-						const isCollapsed = ! $( 'body' ).hasClass( 'media-categories-sidebar-collapsed' );
-						setSidebarCollapsedState( isCollapsed, true );
-					}
+					className: 'media-categories-browse-button'
 				} ).render()
 			);
 		}
@@ -337,7 +334,7 @@
 			}, 100 );
 		} );
 
-		$( document ).on( 'click', '#posts-filter .media-categories-browse-button', toggleSidebarPanel );
+		$( document ).on( 'click', '.media-categories-browse-button', toggleSidebarPanel );
 	}
 
 	function toggleSidebarPanel( event ) {
@@ -454,7 +451,7 @@
 	}
 
 	function getSidebarSessionKey() {
-		return sidebarSessionKey + ( isGridMode() ? 'Grid' : 'List' );
+		return sidebarSessionKey + ':' + String( data.version || '1' ) + ':' + ( isGridMode() ? 'Grid' : 'List' );
 	}
 
 	function isGridMode() {
