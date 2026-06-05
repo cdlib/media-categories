@@ -258,18 +258,56 @@
 		wrap.toggleClass( 'media-categories-list-layout', ! isGrid && listForm.length );
 
 		if ( ! isGrid && listForm.length ) {
+			setListWrapWidth( wrap );
 			placeListSidebarButton();
 
 			if ( ! sidebar.next().is( listForm ) ) {
 				sidebar.insertBefore( listForm );
 			}
 		} else if ( mediaFrame.length ) {
+			wrap.css( {
+				maxWidth: '',
+				width: ''
+			} );
+
 			if ( ! sidebar.next().is( mediaFrame ) ) {
 				sidebar.insertBefore( mediaFrame );
 			}
 		} else {
+			wrap.css( {
+				maxWidth: '',
+				width: ''
+			} );
+
 			wrap.append( sidebar );
 		}
+	}
+
+	function setListWrapWidth( wrap ) {
+		const content = $( '#wpbody-content' ).first();
+
+		if ( window.innerWidth <= 960 || ! content.length || ! wrap.length ) {
+			wrap.css( {
+				maxWidth: '',
+				width: ''
+			} );
+			return;
+		}
+
+		const contentOffset = content.offset();
+		const wrapOffset = wrap.offset();
+
+		if ( ! contentOffset || ! wrapOffset ) {
+			return;
+		}
+
+		const leftInset = Math.max( 0, wrapOffset.left - contentOffset.left );
+		const width = Math.max( 320, content.outerWidth() - leftInset - 20 );
+
+		wrap.css( {
+			maxWidth: 'none',
+			width: width + 'px'
+		} );
 	}
 
 	function recoverSidebarMarkup() {

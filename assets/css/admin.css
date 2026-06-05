@@ -366,6 +366,7 @@ body.upload-php.mode-grid .media-frame {
 
 body.upload-php .wrap.media-categories-list-layout {
 	width: calc(100% - 22px);
+	max-width: none;
 }
 
 body.upload-php:not(.mode-grid) .wrap > .media-categories-layout,
