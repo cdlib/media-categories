@@ -56,13 +56,7 @@ class Folder_Sidebar {
 			$classes .= ' mode-' . $mode;
 		}
 
-		$is_collapsed = true;
-
-		if ( 'list' === $mode ) {
-			$is_collapsed = ! isset( $_COOKIE['mediaCategoriesSidebarCollapsed'] ) || '0' !== sanitize_text_field( wp_unslash( $_COOKIE['mediaCategoriesSidebarCollapsed'] ) );
-		}
-
-		if ( $this->is_upload_screen() && $is_collapsed ) {
+		if ( $this->is_upload_screen() ) {
 			$classes .= ' media-categories-sidebar-collapsed';
 		}
 

@@ -37,7 +37,6 @@
 	let sidebarRefreshTimer = null;
 	let toolbarInterval = null;
 	const sidebarSessionKey = 'mediaCategoriesSidebarCollapsed';
-	const sidebarCookieKey = 'mediaCategoriesSidebarCollapsed';
 	let nativeGridFilterRegistered = false;
 	let sidebarToggleButtonView = null;
 	let initialToolbarSelectionsSynced = false;
@@ -447,10 +446,6 @@
 
 		if ( false !== persist ) {
 			window.sessionStorage.setItem( getSidebarSessionKey(), isCollapsed ? '1' : '0' );
-
-			if ( ! isGridMode() ) {
-				document.cookie = sidebarCookieKey + '=' + ( isCollapsed ? '1' : '0' ) + '; path=/; SameSite=Lax';
-			}
 		}
 
 		updateSidebarToggleButton();
@@ -469,23 +464,8 @@
 		return 'grid' === mode || $( 'body' ).hasClass( 'mode-grid' ) || $( '.media-frame' ).length > 0;
 	}
 
-	function getCookieValue( name ) {
-		const cookies = document.cookie ? document.cookie.split( '; ' ) : [];
-
-		for ( let index = 0; index < cookies.length; index++ ) {
-			const parts = cookies[ index ].split( '=' );
-
-			if ( decodeURIComponent( parts[0] ) === name ) {
-				return decodeURIComponent( parts.slice( 1 ).join( '=' ) );
-			}
-		}
-
-		return null;
-	}
-
 	function applyStoredSidebarState() {
-		const isGrid = isGridMode();
-		const storedValue = window.sessionStorage.getItem( getSidebarSessionKey() ) || ( isGrid ? null : getCookieValue( sidebarCookieKey ) );
+		const storedValue = window.sessionStorage.getItem( getSidebarSessionKey() );
 		const isCollapsed = null === storedValue ? true : '1' === storedValue;
 
 		setSidebarCollapsedState( isCollapsed, false );
