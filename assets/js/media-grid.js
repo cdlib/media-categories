@@ -272,6 +272,34 @@
 		}
 	}
 
+	function recoverSidebarMarkup() {
+		const sidebar = $( '.media-categories-layout' ).first();
+		const wrap = $( 'body.upload-php .wrap' ).first();
+		const deferred = $.Deferred();
+
+		if ( sidebar.length || ! wrap.length ) {
+			deferred.resolve();
+			return deferred.promise();
+		}
+
+		$.get( window.location.href ).done( function( response ) {
+			const markup = $( '<div></div>' ).append( $.parseHTML( response ) );
+			const nextSidebar = markup.find( '.media-categories-layout' ).first();
+
+			if ( nextSidebar.length ) {
+				wrap.append( nextSidebar );
+				placeSidebar();
+				deferred.resolve();
+			} else {
+				deferred.reject();
+			}
+		} ).fail( function() {
+			deferred.reject();
+		} );
+
+		return deferred.promise();
+	}
+
 	function updateLibraryFilter( selected ) {
 		const browser = getBrowser();
 		const nextSelected = selected || '';
@@ -346,7 +374,15 @@
 		}
 
 		placeSidebar();
-		setSidebarCollapsedState( isCollapsed, true );
+
+		if ( $( '.media-categories-layout' ).length ) {
+			setSidebarCollapsedState( isCollapsed, true );
+			return;
+		}
+
+		recoverSidebarMarkup().always( function() {
+			setSidebarCollapsedState( isCollapsed, true );
+		} );
 	}
 
 	function refreshSidebarCounts() {
@@ -442,7 +478,11 @@
 		$body.toggleClass( 'media-categories-sidebar-collapsed', isCollapsed );
 
 		if ( false !== persist ) {
-			window.sessionStorage.setItem( getSidebarSessionKey(), isCollapsed ? '1' : '0' );
+			try {
+				window.sessionStorage.setItem( getSidebarSessionKey(), isCollapsed ? '1' : '0' );
+			} catch ( error ) {
+				// Some admin/browser configurations block sessionStorage. The visual state should still update.
+			}
 		}
 
 		updateSidebarToggleButton();
@@ -462,7 +502,14 @@
 	}
 
 	function applyStoredSidebarState() {
-		const storedValue = window.sessionStorage.getItem( getSidebarSessionKey() );
+		let storedValue = null;
+
+		try {
+			storedValue = window.sessionStorage.getItem( getSidebarSessionKey() );
+		} catch ( error ) {
+			storedValue = null;
+		}
+
 		const isCollapsed = null === storedValue ? true : '1' === storedValue;
 
 		setSidebarCollapsedState( isCollapsed, false );
