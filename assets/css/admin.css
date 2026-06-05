@@ -435,7 +435,7 @@ body.upload-php #posts-filter .media-categories-browse-button {
 	min-height: 0;
 	padding: 0 10px;
 	line-height: 2.15384615;
-	margin-right: 8px;
+	margin: 0 8px 0 0;
 	vertical-align: middle;
 }
 
@@ -445,22 +445,37 @@ body.upload-php #posts-filter .wp-filter .search-box {
 	gap: 8px;
 }
 
-body.upload-php #posts-filter .wp-filter .search-box .media-categories-browse-button {
-	margin-right: 0;
+body.upload-php:not(.mode-grid) #posts-filter .wp-filter {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+body.upload-php.media-categories-sidebar-collapsed:not(.mode-grid) #posts-filter .wp-filter .media-categories-browse-button {
+	margin-left: auto;
+}
+
+body.upload-php.media-categories-sidebar-collapsed:not(.mode-grid) #posts-filter .wp-filter .search-box {
+	float: none;
+	margin: 0;
+}
+
+body.upload-php:not(.media-categories-sidebar-collapsed):not(.mode-grid) #posts-filter .wp-filter .search-box {
+	flex: 1 1 100%;
+	justify-content: flex-start;
+	margin-top: 8px;
+	float: none;
+	order: 2;
+}
+
+body.upload-php:not(.media-categories-sidebar-collapsed):not(.mode-grid) #posts-filter .wp-filter .search-box input[type="search"] {
+	width: min(420px, 100%);
 }
 
 body.upload-php:not(.mode-grid) #posts-filter .wp-filter #filter-by-media-category {
 	width: 170px;
 	max-width: 170px;
-}
-
-body.upload-php:not(.mode-grid) #posts-filter .media-categories-list-action-row {
-	clear: none;
-	padding: 12px 0 0;
-}
-
-body.upload-php:not(.mode-grid) #posts-filter .media-categories-list-action-row .media-categories-browse-button {
-	margin: 0;
 }
 
 .media-categories-dropdown {

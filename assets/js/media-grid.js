@@ -222,11 +222,12 @@
 		const button = listForm.find( '.media-categories-browse-button' ).first();
 		const categoryFilter = filterBar.find( '#filter-by-media-category' ).first();
 		const filterButton = filterBar.find( '#post-query-submit' ).first();
-		let actionRow = listForm.find( '.media-categories-list-action-row' ).first();
+		const actionRow = listForm.find( '.media-categories-list-action-row' ).first();
 
 		listForm.children( 'input[type="hidden"][name="author"]' ).remove();
 		filterBar.find( '#author' ).remove();
 		filterBar.find( '#filter-by-media-author' ).remove();
+		actionRow.remove();
 
 		if ( ! filterBar.length || ! button.length ) {
 			return;
@@ -236,17 +237,12 @@
 			filterButton.insertAfter( categoryFilter );
 		}
 
+		if ( filterButton.length && ! filterButton.next().is( button ) ) {
+			button.insertAfter( filterButton );
+		}
+
 		if ( searchBox.length && ! searchBox.parent().is( filterBar ) ) {
 			filterBar.append( searchBox );
-		}
-
-		if ( ! actionRow.length ) {
-			actionRow = $( '<div class="media-categories-list-action-row"></div>' );
-			actionRow.insertAfter( filterBar );
-		}
-
-		if ( ! button.parent().is( actionRow ) ) {
-			actionRow.append( button );
 		}
 	}
 
