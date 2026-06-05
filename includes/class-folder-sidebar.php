@@ -33,8 +33,6 @@ class Folder_Sidebar {
 	 * @return void
 	 */
 	public function register() {
-		add_action( 'all_admin_notices', array( $this, 'render_list_sidebar' ) );
-		add_action( 'admin_notices', array( $this, 'render_list_sidebar' ) );
 		add_action( 'restrict_manage_posts', array( $this, 'render_list_sidebar_from_filters' ), 0 );
 		add_action( 'admin_footer-upload.php', array( $this, 'render_sidebar' ) );
 		add_filter( 'admin_body_class', array( $this, 'add_collapsed_body_class' ) );
@@ -61,19 +59,6 @@ class Folder_Sidebar {
 		}
 
 		return $classes;
-	}
-
-	/**
-	 * Render the sidebar early in list view to avoid post-load layout shifts.
-	 *
-	 * @return void
-	 */
-	public function render_list_sidebar() {
-		if ( 'list' !== $this->get_media_library_mode() ) {
-			return;
-		}
-
-		$this->render_sidebar();
 	}
 
 	/**
