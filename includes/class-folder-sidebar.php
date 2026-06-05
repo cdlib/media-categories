@@ -146,9 +146,10 @@ class Folder_Sidebar {
 			return '';
 		}
 
-		$mode = isset( $_GET['mode'] ) ? sanitize_key( wp_unslash( $_GET['mode'] ) ) : get_user_setting( 'posts_list_mode', 'list' );
+		$mode = isset( $_GET['mode'] ) ? sanitize_key( wp_unslash( $_GET['mode'] ) ) : get_user_option( 'media_library_mode', get_current_user_id() );
+		$mode = $mode ? $mode : 'grid';
 
-		return in_array( $mode, array( 'grid', 'list' ), true ) ? $mode : 'list';
+		return in_array( $mode, array( 'grid', 'list' ), true ) ? $mode : 'grid';
 	}
 
 	/**
@@ -192,8 +193,7 @@ class Folder_Sidebar {
 	 * @return void
 	 */
 	private function render_folder_item( $value, $label, $count, $current, $children, $is_all_files = false, $term_id = 0 ) {
-		$mode = isset( $_GET['mode'] ) ? sanitize_key( wp_unslash( $_GET['mode'] ) ) : get_user_setting( 'posts_list_mode', 'list' );
-		$mode = in_array( $mode, array( 'grid', 'list' ), true ) ? $mode : 'list';
+		$mode = $this->get_media_library_mode();
 
 		$url = add_query_arg(
 			array(
