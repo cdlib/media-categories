@@ -340,18 +340,18 @@
 
 	function updateLibraryFilter( selected ) {
 		const browser = getBrowser();
-		const nextSelected = selected || '';
+		const nextSelected = selected === undefined || selected === null || selected === '' ? null : String( selected );
+		const folderValue = nextSelected || '';
 
-		if ( browser && browser.collection ) {
+		if ( browser && browser.collection && browser.collection.props ) {
+			// Changing query props already triggers WordPress's collection requery.
 			browser.collection.props.set( 'media_category_filter', nextSelected );
-			browser.collection._requery( true );
 		} else {
 			return false;
 		}
 
-		$( '.media-categories-grid-filter select' ).val( nextSelected );
 		$( '.media-categories-folder' ).removeClass( 'is-current' );
-		$( '.media-categories-folder[data-media-category-filter="' + nextSelected + '"]' ).addClass( 'is-current' );
+		$( '.media-categories-folder[data-media-category-filter="' + folderValue + '"]' ).addClass( 'is-current' );
 		updateToolbarState();
 
 		return true;
@@ -368,10 +368,6 @@
 
 		if ( data.selected ) {
 			browser.collection.props.set( 'media_category_filter', data.selected );
-		}
-
-		if ( data.selected ) {
-			browser.collection._requery( true );
 		}
 	}
 
