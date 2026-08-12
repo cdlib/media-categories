@@ -60,7 +60,7 @@ class Media_Filters {
 
 		echo '</select>';
 
-		echo '<button type="button" class="button media-categories-browse-button">' . esc_html__( 'Open side panel', 'media-categories' ) . '</button>';
+		echo '<button type="button" class="button media-categories-browse-button">' . esc_html__( 'View folders', 'media-categories' ) . '</button>';
 	}
 
 	/**

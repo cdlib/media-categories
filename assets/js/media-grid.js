@@ -24,8 +24,8 @@
 			renamePrompt: 'Enter a new folder name.',
 			deleteConfirm: 'Delete this folder? Media items will remain in the library.',
 			selectFolder: 'Select a folder first.',
-			browseButton: 'Open side panel',
-			closePanelButton: 'Close side panel'
+			browseButton: 'View folders',
+			closePanelButton: 'Close folders'
 		}
 	};
 	const localizedData = window.mediaCategoriesData || {};
