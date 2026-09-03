@@ -36,25 +36,19 @@ class Media_Filters {
 		}
 
 		$selected = isset( $_GET['media_category_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['media_category_filter'] ) ) : '';
-		$options = get_terms(
-			array(
-				'taxonomy'   => TAXONOMY,
-				'hide_empty' => false,
-				'orderby'    => 'name',
-			)
-		);
+		$options = get_media_category_term_options( TAXONOMY );
 
 		echo '<label class="screen-reader-text" for="filter-by-media-category">' . esc_html__( 'Filter by Media Categories', 'media-categories' ) . '</label>';
 		echo '<select id="filter-by-media-category" name="media_category_filter">';
 		echo '<option value="">' . esc_html__( 'All categories', 'media-categories' ) . '</option>';
 		echo '<option value="uncategorized" ' . selected( 'uncategorized', $selected, false ) . '>' . esc_html__( 'Uncategorized', 'media-categories' ) . '</option>';
 
-		foreach ( $options as $term ) {
+		foreach ( $options as $option ) {
 			printf(
 				'<option value="%1$d" %2$s>%3$s</option>',
-				(int) $term->term_id,
-				selected( (string) $term->term_id, $selected, false ),
-				esc_html( $term->name )
+				(int) $option['value'],
+				selected( (string) $option['value'], $selected, false ),
+				esc_html( $option['label'] )
 			);
 		}
 

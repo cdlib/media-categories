@@ -82,7 +82,7 @@
 				};
 				const termOptions = Array.isArray( data.termOptions ) ? data.termOptions : [];
 
-				termOptions.forEach( function( term ) {
+				termOptions.forEach( function( term, index ) {
 					if ( ! term || ! term.value || ! term.label ) {
 						return;
 					}
@@ -92,7 +92,8 @@
 						props: {
 							media_category_filter: String( term.value )
 						},
-						priority: 20
+						// Numeric object keys are enumerated by ID, so preserve the PHP hierarchy explicitly.
+						priority: 20 + index
 					};
 				} );
 
@@ -357,6 +358,14 @@
 		return true;
 	}
 
+	function resetCategoryFilterForViewChange() {
+		if ( ! isGridMode() ) {
+			return;
+		}
+
+		updateLibraryFilter( null );
+	}
+
 	function applyInitialFilter() {
 		const browser = getBrowser();
 
@@ -411,11 +420,13 @@
 
 		if ( $( '.media-categories-layout' ).length ) {
 			setSidebarCollapsedState( isCollapsed, true );
+			resetCategoryFilterForViewChange();
 			return;
 		}
 
 		recoverSidebarMarkup().always( function() {
 			setSidebarCollapsedState( isCollapsed, true );
+			resetCategoryFilterForViewChange();
 		} );
 	}
 

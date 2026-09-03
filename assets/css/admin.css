@@ -264,10 +264,10 @@ body.upload-php:not(.media-categories-sidebar-collapsed) .media-frame-toolbar .m
 	padding: 0;
 }
 
-.media-categories-tree--children {
-	margin-left: 10px;
+.media-categories-tree .media-categories-tree--children {
+	margin-left: 14px;
 	margin-top: 6px;
-	padding-left: 24px;
+	padding-left: 4px;
 	border-left: 1px solid #dcdcde;
 }
 
@@ -705,9 +705,9 @@ body.upload-php.mode-grid.media-categories-sidebar-collapsed .media-frame {
 		width: 100%;
 	}
 
-	.media-categories-tree--children {
-		margin-left: 4px;
-		padding-left: 18px;
+	.media-categories-tree .media-categories-tree--children {
+		margin-left: 10px;
+		padding-left: 4px;
 	}
 
 	.media-categories-folder {
