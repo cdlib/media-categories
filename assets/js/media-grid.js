@@ -47,16 +47,12 @@
 			return null;
 		}
 
-		if ( wp.media.frame && wp.media.frame.content ) {
-			const browser = wp.media.frame.content.get();
-
-			if ( browser ) {
-				return browser;
-			}
-		}
-
 		if ( wp.media.frames && wp.media.frames.browse && wp.media.frames.browse.browserView ) {
-			return wp.media.frames.browse.browserView;
+			const libraryBrowser = wp.media.frames.browse.browserView;
+
+			if ( libraryBrowser.collection && libraryBrowser.collection.props ) {
+				return libraryBrowser;
+			}
 		}
 
 		return null;
@@ -366,6 +362,16 @@
 		updateLibraryFilter( null );
 	}
 
+	function applyFolderFilter( selected, attemptsRemaining ) {
+		if ( updateLibraryFilter( selected ) || attemptsRemaining <= 0 ) {
+			return;
+		}
+
+		window.setTimeout( function() {
+			applyFolderFilter( selected, attemptsRemaining - 1 );
+		}, 100 );
+	}
+
 	function applyInitialFilter() {
 		const browser = getBrowser();
 
@@ -388,7 +394,7 @@
 		controlsBound = true;
 
 		$( document ).on( 'click', '.media-categories-folder', function( event ) {
-			if ( ! $( 'body' ).hasClass( 'mode-grid' ) ) {
+			if ( ! isGridMode() ) {
 				return;
 			}
 
@@ -396,13 +402,7 @@
 
 			const selected = $( this ).data( 'media-category-filter' );
 
-			if ( updateLibraryFilter( selected ) ) {
-				return;
-			}
-
-			window.setTimeout( function() {
-				updateLibraryFilter( selected );
-			}, 100 );
+			applyFolderFilter( selected, 5 );
 		} );
 
 		$( document ).on( 'click', '.media-categories-browse-button', toggleSidebarPanel );
