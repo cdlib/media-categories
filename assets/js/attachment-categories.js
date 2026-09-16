@@ -45,16 +45,27 @@
 	function updateValues( dropdown ) {
 		const inputName = dropdown.data( 'input-name' );
 		const values = dropdown.find( '.media-categories-dropdown__values' );
+		const selectedValues = getCheckboxes( dropdown ).filter( ':checked' ).map( function() {
+			return $( this ).val();
+		} ).get();
 
 		values.empty();
 
-		getCheckboxes( dropdown ).filter( ':checked' ).each( function() {
+		if ( inputName.slice( -2 ) === '[]' ) {
+			selectedValues.forEach( function( selectedValue ) {
+				values.append(
+					$( '<input type="hidden" />' )
+						.attr( 'name', inputName )
+						.val( selectedValue )
+				);
+			} );
+		} else {
 			values.append(
 				$( '<input type="hidden" />' )
 					.attr( 'name', inputName )
-					.val( $( this ).val() )
+					.val( selectedValues.join( ',' ) )
 			);
-		} );
+		}
 	}
 
 	function updateButtonText( dropdown ) {

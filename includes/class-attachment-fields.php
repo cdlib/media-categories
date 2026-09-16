@@ -93,7 +93,7 @@ class Attachment_Fields {
 		$selected_ids = wp_get_object_terms( $post->ID, TAXONOMY, array( 'fields' => 'ids' ) );
 		$selected_ids = $this->expand_with_ancestor_terms( $selected_ids );
 		$html = '<div class="media-categories-modal-field"><fieldset><legend class="screen-reader-text">' . esc_html__( 'Media Categories', 'media-categories' ) . '</legend>';
-		$html .= $this->render_term_dropdown( $selected_ids, 'attachments[' . (int) $post->ID . '][media_categories_terms][]', 'media-categories-modal-' . (int) $post->ID );
+		$html .= $this->render_term_dropdown( $selected_ids, 'attachments[' . (int) $post->ID . '][media_categories_terms]', 'media-categories-modal-' . (int) $post->ID );
 		$html                     .= '</fieldset></div>';
 		$form_fields['media_categories_terms'] = array(
 			'label' => __( 'Media Categories', 'media-categories' ),
@@ -163,11 +163,19 @@ class Attachment_Fields {
 		);
 		$html          .= '<div class="media-categories-dropdown__values">';
 
-		foreach ( $selected_ids as $selected_id ) {
+		if ( '[]' === substr( $input_name, -2 ) ) {
+			foreach ( $selected_ids as $selected_id ) {
+				$html .= sprintf(
+					'<input type="hidden" name="%1$s" value="%2$d" />',
+					esc_attr( $input_name ),
+					(int) $selected_id
+				);
+			}
+		} else {
 			$html .= sprintf(
-				'<input type="hidden" name="%1$s" value="%2$d" />',
+				'<input type="hidden" name="%1$s" value="%2$s" />',
 				esc_attr( $input_name ),
-				(int) $selected_id
+				esc_attr( implode( ',', array_map( 'intval', $selected_ids ) ) )
 			);
 		}
 
