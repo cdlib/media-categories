@@ -1,7 +1,7 @@
 === Media Categories ===
 Contributors: codex
 Requires at least: 6.6
-Tested up to: 7.0.4
+Tested up to: 7.1.2
 Requires PHP: 7.4
 Stable tag: 1.1.1
 License: MIT
