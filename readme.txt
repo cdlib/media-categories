@@ -8,3 +8,8 @@ License: MIT
 License URI: https://opensource.org/licenses/MIT
 
 Adds hierarchical media categories, attachment assignment controls, filters, and virtual folders to the WordPress media library.
+
+== Changelog ==
+
+= 1.1.2 =
+* Migrated plugin updates to GitHub Releases, with a one-time CDLIB bridge for existing installations.

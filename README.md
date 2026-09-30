@@ -12,9 +12,10 @@ Pull requests are welcome, but releases and review cycles may be infrequent.
 
 Updates use [GitHub-hosted metadata](https://github.com/cdlib/media-categories/blob/main/downloads/info.json)
 and versioned [GitHub Release ZIPs](https://github.com/cdlib/media-categories/releases).
-Existing `1.1.1` installations can update through the temporary CDLIB bridge;
-subsequent updates use GitHub. Release packaging and publishing tools are kept
-in a separate private configuration repository.
+Existing `1.1.1` installations can update through the one-time CDLIB bridge
+for version `1.1.2`. After installing `1.1.2`, subsequent updates use GitHub.
+Release packaging and publishing tools are kept in a separate private
+configuration repository.
 
 ## Open Source
 
