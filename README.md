@@ -1,6 +1,6 @@
 # Media Categories
 
-Current version: `1.1.1`
+Current version: `1.1.2`
 
 Media Categories is a WordPress plugin that adds a hierarchical category
 taxonomy to attachments. Media items can belong to multiple categories, and
@@ -9,6 +9,12 @@ items.
 
 This plugin is currently owner-maintained by [Eric Satzman](mailto:esatzman@ucop.edu).
 Pull requests are welcome, but releases and review cycles may be infrequent.
+
+Updates use [GitHub-hosted metadata](https://github.com/cdlib/media-categories/blob/main/downloads/info.json)
+and versioned [GitHub Release ZIPs](https://github.com/cdlib/media-categories/releases).
+Existing `1.1.1` installations can update through the temporary CDLIB bridge;
+subsequent updates use GitHub. Release packaging and publishing tools are kept
+in a separate private configuration repository.
 
 ## Open Source
 

@@ -3,9 +3,9 @@
  * Plugin Name: Media Categories
  * Plugin URI:  https://github.com/cdlib/media-categories
  * Description: Adds hierarchical media categories, media-library filtering, and virtual folders for attachments.
- * Version:     1.1.1
+ * Version:     1.1.2
  * Author:      Eric Satzman
- * Update URI:  https://cdlib.org/services-groups/webprod/plugins/media-categories/
+ * Update URI:  https://github.com/cdlib/media-categories/
  * License:     MIT
  * License URI: https://opensource.org/licenses/MIT
  * Text Domain: media-categories
@@ -15,12 +15,12 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MEDIA_CATEGORIES_VERSION', '1.1.1' );
+define( 'MEDIA_CATEGORIES_VERSION', '1.1.2' );
 define( 'MEDIA_CATEGORIES_FILE', __FILE__ );
 define( 'MEDIA_CATEGORIES_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MEDIA_CATEGORIES_URL', plugin_dir_url( __FILE__ ) );
-define( 'MEDIA_CATEGORIES_UPDATE_INFO_URL', 'https://cdlib.org/services-groups/webprod/plugins/media-categories/info.json' );
-define( 'MEDIA_CATEGORIES_UPDATE_PACKAGE_URL', 'https://cdlib.org/services-groups/webprod/plugins/media-categories/files/media-categories-1.1.1.zip' );
+define( 'MEDIA_CATEGORIES_UPDATE_INFO_URL', 'https://raw.githubusercontent.com/cdlib/media-categories/main/downloads/info.json' );
+define( 'MEDIA_CATEGORIES_UPDATE_PACKAGE_URL', 'https://github.com/cdlib/media-categories/releases/download/v1.1.2/media-categories-1.1.2.zip' );
 
 require_once MEDIA_CATEGORIES_DIR . 'includes/helpers.php';
 require_once MEDIA_CATEGORIES_DIR . 'includes/class-plugin.php';
