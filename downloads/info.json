@@ -1,0 +1,14 @@
+{
+  "name": "Media Categories",
+  "slug": "media-categories",
+  "version": "1.1.2",
+  "requires": "6.2",
+  "tested": "7.1.2",
+  "requires_php": "7.4",
+  "download_url": "https://github.com/cdlib/media-categories/releases/download/v1.1.2/media-categories-1.1.2.zip",
+  "last_updated": "2026-09-30",
+  "sections": {
+    "description": "Add category-style organization and filtering for WordPress media.",
+    "changelog": "<h4>1.1.2</h4><ul><li>Migrated plugin updates to GitHub Releases.</li></ul><h4>1.1.1</h4><ul><li>Improved media category hierarchy display and ordering.</li><li>Stabilized folder filtering when switching between category and folder views.</li><li>Fixed attachment details so multiple selected media categories are preserved.</li></ul><h4>1.0.8</h4><ul><li>Improved folder filtering performance and updated folder controls.</li></ul><h4>1.0.7</h4><ul><li>Media Library list and grid control refinements.</li></ul><h4>1.0.6</h4><ul><li>Media Library list and grid control refinements.</li></ul><h4>1.0.5</h4><ul><li>Updates to the category count and side panel.</li></ul><h4>1.0.4</h4><ul><li>Readme file updates.</li></ul><h4>1.0.3</h4><ul><li>Release update.</li></ul><h4>1.0.2</h4><ul><li>Release update.</li></ul><h4>1.0.1</h4><ul><li>Initial release.</li></ul>"
+  }
+}
